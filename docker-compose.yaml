@@ -1,0 +1,61 @@
+services:
+  # сам бот
+  app:
+    build: .
+    environment:
+      - TOKEN=${TOKEN}
+      - DATABASE_DSN=postgresql+asyncpg://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
+      - REDIS_URL=redis://redis:${REDIS_PORT}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    networks:
+      - network
+
+  # база данных
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - network
+
+  # nosql бд
+  redis:
+    image: redis:alpine
+    networks:
+      - network
+    volumes:
+      - redis:/data
+
+  # сервис для запуска тестов
+  tests:
+    build: .
+    command: poetry run pytest -v
+    environment:
+      - TOKEN=${TOKEN}
+      - DATABASE_DSN=postgresql+asyncpg://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
+      - REDIS_URL=redis://redis:${REDIS_PORT}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - .:/app
+    networks:
+      - network 
+
+networks:
+  network:
+    driver: bridge
+
+volumes:
+  postgres:
+    driver: local
+  redis:
+    driver: local
+
