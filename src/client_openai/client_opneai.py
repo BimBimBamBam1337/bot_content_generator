@@ -6,7 +6,7 @@ from openai.types.beta import Thread
 from openai.types.beta.threads import Message
 
 
-class ClientOpenAi:
+class ClientOpenAI:
     def __init__(self, openai_key: str, assistant_id: str) -> None:
         self.client = AsyncOpenAI(api_key=openai_key)
         self.assistant_id = assistant_id
@@ -33,7 +33,7 @@ class ClientOpenAi:
         )
         return thread_messages.data
 
-    async def get_response(self, thread: Thread) -> str:
+    async def run_assistant(self, thread: Thread) -> str:
         assistant = await self.client.beta.assistants.retrieve(
             assistant_id=self.assistant_id
         )
