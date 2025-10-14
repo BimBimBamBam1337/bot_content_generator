@@ -9,7 +9,7 @@ class UnitOfWork:
     async def __aenter__(self):
         self.session: AsyncSession = self.session_factory()
         self.user_repo: UserRepository = UserRepository(self.session)
-
+        self.promo_code_repo: PromoCodeRepository = PromoCodeRepository(self.session)
         return self
 
     async def __aexit__(

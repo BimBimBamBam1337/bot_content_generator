@@ -1,15 +1,24 @@
 import asyncio
-from src.client_openai import ClientOpenAI
-from src.config import settings
 
-client = ClientOpenAI(settings.openai_key, settings.assistant_id)
+from aiogram.types import FSInputFile
+from loguru import logger
+
+from src.config import dp, bot
+from src.telegram.handlers import routers
+from src.telegram.midlewares import DependanciesMiddleware
+from src.constants import *
 
 
 async def main():
-    thread = await client.get_thread("thread_GffXXxkxctCiHhux7XgdkN2Z")
-    response = await client.create_message(text="Расскажи о себе", thread_id=thread.id)
-    assistant_response = await client.run_assistant(thread)
-    print(assistant_response)
+    dm = DependanciesMiddleware()
+    dp.message.outer_middleware(dm)
+    dp.callback_query.outer_middleware(dm)
+    dp.my_chat_member.outer_middleware(dm)
+    dp.include_routers(*routers)
+    await bot.delete_webhook(drop_pending_updates=False)
+    logger.info(f"Bot started {await bot.get_me()}")
+
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":

@@ -1,1 +1,1 @@
-from .client_opneai import ClientOpenAI
+from .client_opneai import client

@@ -1,4 +1,6 @@
-from sqlalchemy import select, update
+from datetime import datetime
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from src.database.models import User
@@ -13,6 +15,17 @@ class UserRepository:
         self.session.add(user)
         await self.session.flush()
         return user
+
+    async def delete(self, user_id: int) -> None:
+        await self.session.execute(delete(User).where(User.id == user_id))
+        await self.session.flush()
+
+    async def add_promo_code(self, user: User, promo_code: str):
+        if promo_code in user.used_promo_codes:
+            return False
+        user.used_promo_codes[promo_code] = datetime.now().isoformat()
+        await self.session.flush()
+        return True
 
     async def get(self, user_id: int) -> User | None:
         user = await self.session.get(User, user_id)

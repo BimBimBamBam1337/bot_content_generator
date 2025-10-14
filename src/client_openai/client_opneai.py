@@ -5,6 +5,8 @@ from openai.resources.beta.threads.messages import Messages
 from openai.types.beta import Thread
 from openai.types.beta.threads import Message
 
+from src.config import settings
+
 
 class ClientOpenAI:
     def __init__(self, openai_key: str, assistant_id: str) -> None:
@@ -48,3 +50,8 @@ class ClientOpenAI:
         message = await self.client.beta.threads.messages.list(thread_id=thread.id)
         new_message = message.data[0].content[0].text.value
         return new_message
+
+
+client = ClientOpenAI(
+    openai_key=settings.openai_key, assistant_id=settings.assistant_id
+)
