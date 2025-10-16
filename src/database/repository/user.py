@@ -20,10 +20,13 @@ class UserRepository:
         await self.session.execute(delete(User).where(User.id == user_id))
         await self.session.flush()
 
-    async def add_promo_code(self, user: User, promo_code: str):
+    async def add_promo_code(self, user: User, promo_code: str) -> bool:
         if promo_code in user.used_promo_codes:
             return False
+
         user.used_promo_codes[promo_code] = datetime.now().isoformat()
+
+        self.session.add(user)
         await self.session.flush()
         return True
 

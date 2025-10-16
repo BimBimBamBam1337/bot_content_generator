@@ -7,12 +7,11 @@ from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 
 from src.database.uow import UnitOfWork
-from src.telegram.filters import AdminFilter
-from src.telegram.states import Promo
+from src.telegram.states import Promo, Chat
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
-
+from src.client_openai import client
 from src.constants import *
 
 
@@ -34,7 +33,7 @@ async def check_code(message: Message, uow: UnitOfWork, state: FSMContext):
             return
 
         if message.text in user.used_promo_codes:
-            await message.answer("Ты уже использовал этот промокод ❌")
+            await message.answer("Ты уже использовал этот промокод")
             return
 
         await uow.user_repo.add_promo_code(user, message.text)
@@ -43,5 +42,22 @@ async def check_code(message: Message, uow: UnitOfWork, state: FSMContext):
             text=texts.rigth_promocde_text,
             reply_markup=create_vertical_keyboard(
                 keyboards_text.assemble_posts_buttons
+            ),
+        )
+
+
+@router.message(Chat.send_message)
+async def send_message_to_openai(message: Message, uow: UnitOfWork, state: FSMContext):
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await client.get_thread(user.thread_id)
+        await client.create_message(message.text, user.thread_id)
+
+        response = await client.run_assistant(thread)
+        await state.set_data({"data": response})
+        await message.answer(
+            text=response,
+            reply_markup=create_vertical_keyboard(
+                keyboards_text.chose_transcription_buttons
             ),
         )

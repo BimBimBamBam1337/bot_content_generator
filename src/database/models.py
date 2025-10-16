@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
 from sqlalchemy import String, Integer, Boolean, DateTime, JSON
-
+from sqlalchemy.ext.mutable import MutableDict
 
 Base = declarative_base()
 
@@ -17,7 +17,9 @@ class User(Base):
         DateTime, default=datetime.now, onupdate=datetime.now
     )
 
-    used_promo_codes: Mapped[dict[str, str]] = mapped_column(JSON, default=dict)
+    used_promo_codes: Mapped[dict[str, datetime]] = mapped_column(
+        MutableDict.as_mutable(JSON), default=dict
+    )
 
     language_code: Mapped[str] = mapped_column(String, nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)

@@ -5,10 +5,8 @@ from openai.resources.beta.threads.messages import Messages
 from openai.types.beta import Thread
 from openai.types.beta.threads import Message
 
-from src.config import settings
 
-
-class ClientOpenAI:
+class AssistantOpenAI:
     def __init__(self, openai_key: str, assistant_id: str) -> None:
         self.client = AsyncOpenAI(api_key=openai_key)
         self.assistant_id = assistant_id
@@ -52,6 +50,4 @@ class ClientOpenAI:
         return new_message
 
 
-client = ClientOpenAI(
-    openai_key=settings.openai_key, assistant_id=settings.assistant_id
-)
+class WhisperOpenAi: ...

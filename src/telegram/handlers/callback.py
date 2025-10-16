@@ -7,8 +7,8 @@ from aiogram.fsm.context import FSMContext
 
 from src.client_openai import client
 from src.database.uow import UnitOfWork
-from src.telegram.filters import AdminFilter
-from src.telegram.states import Promo
+from src.telegram.filters import PromoCodeExpiredFilter
+from src.telegram.states import Chat, Promo
 from src.telegram import texts
 from src.telegram.keyboards.inline import keyboards_text
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
@@ -41,15 +41,16 @@ async def back_to_menu(call: CallbackQuery, uow: UnitOfWork):
     )
 
 
-@router.callback_query(F.data == "assemble_posts")
-async def assemble_posts(call: CallbackQuery, uow: UnitOfWork):
+@router.callback_query(F.data == "assemble_posts", PromoCodeExpiredFilter())
+async def assemble_posts(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.send_text_or_voice_text,
     )
+    await state.set_state(Chat.send_message)
 
 
 @router.callback_query(F.data == "reels")
-async def reels(call: CallbackQuery, uow: UnitOfWork):
+async def reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.reels_text,
         reply_markup=create_vertical_keyboard(

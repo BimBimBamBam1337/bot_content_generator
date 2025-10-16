@@ -2,7 +2,7 @@ from src.database.uow import UnitOfWork
 from src.database.models import PromoCode
 
 
-class UserService:
+class PromoCodeService:
     def __init__(self, uow: UnitOfWork):
         self.uow = uow
 
