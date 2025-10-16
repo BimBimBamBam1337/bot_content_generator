@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     db_pass: str
     db_name: str
     redis_port: str
+    openai_key: str
+    assistant_id: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
