@@ -107,7 +107,8 @@ async def article(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 @router.callback_query(SendResponse.prepare_reels)
 async def prepare_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    await state.set_data({"call_data": call.data})
+    await state.update_data(call_data=call.data)
+
     await call.message.answer(
         text=texts.reels_language_text,
         reply_markup=create_vertical_keyboard(
@@ -140,8 +141,6 @@ async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
             keyboards_text.chose_language_post_buttons
         ),
     )
-
-    await state.set_state(SendResponse.reels)
 
 
 @router.callback_query(
