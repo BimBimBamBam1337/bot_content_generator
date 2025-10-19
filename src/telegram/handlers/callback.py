@@ -110,7 +110,9 @@ async def prepare_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext)
     await state.set_data({"call_data": call.data})
     await call.message.answer(
         text=texts.reels_language_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.chose_script_buttos),
+        reply_markup=create_vertical_keyboard(
+            keyboards_text.chose_language_post_buttons
+        ),
     )
     await state.set_state(SendResponse.reels)
 
