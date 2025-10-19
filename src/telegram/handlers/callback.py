@@ -137,9 +137,6 @@ async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
 
     await call.message.answer(
         text=response_text,
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.chose_language_post_buttons
-        ),
     )
 
 
