@@ -53,7 +53,7 @@ async def send_message_to_openai(message: Message, uow: UnitOfWork, state: FSMCo
         await client.create_message(message.text, user.thread_id)
 
         response = await client.run_assistant(thread)
-        await state.update_data(data=response)
+        await state.update_data({"data": response})
 
         await message.answer(
             text=response,
