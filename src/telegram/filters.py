@@ -24,7 +24,7 @@ class PromoCodeExpiredFilter(BaseFilter):
             now = datetime.now(timezone.utc)
 
             if now - used_date > timedelta(days=code.access_days):
+                await message.answer("Промокод истёк, попробуй найти новый")
+                return False
 
-                return True
-        await message.answer("Промокод истёк, попробуй найти новый")
-        return False
+        return True

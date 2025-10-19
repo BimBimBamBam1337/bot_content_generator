@@ -2,7 +2,6 @@ import asyncio
 
 from loguru import logger
 from aiogram import Router, Bot, F
-from aiogram.filters import CommandStart, StateFilter, Command
 from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 

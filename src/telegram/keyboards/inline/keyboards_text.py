@@ -28,6 +28,11 @@ chose_transcription_buttons = {
     "3": ["Пост Threads", "threads"],
     "4": ["Статья", "article"],
 }
+chose_script_buttos = {
+    "0": ["История или инсайт", "story_or_insight"],
+    "1": ["Продающий reels", "selling_reels"],
+    "2": ["Довериться мне", "trust_me"],
+}
 chose_language_post_buttons = {
     "0": ["Русский", "ru"],
     "1": ["Английский", "eu"],
