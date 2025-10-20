@@ -48,7 +48,7 @@ async def check_code(message: Message, uow: UnitOfWork, state: FSMContext):
         )
 
 
-@router.message(Chat.send_message)
+@router.message(F.text, Chat.send_message)
 async def send_message_to_openai(
     message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
