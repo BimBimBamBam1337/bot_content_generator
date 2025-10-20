@@ -60,4 +60,5 @@ async def send_message_to_openai(message: Message, uow: UnitOfWork, state: FSMCo
             reply_markup=create_vertical_keyboard(
                 keyboards_text.chose_transcription_buttons
             ),
+            parse_mode="MarkdownV2",
         )

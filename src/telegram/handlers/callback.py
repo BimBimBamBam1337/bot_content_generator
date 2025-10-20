@@ -5,6 +5,7 @@ from loguru import logger
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
+from aiogram import parse_mode
 from langdetect import detect
 
 from src.client_openai import post_generator
@@ -135,9 +136,7 @@ async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
         await post_generator.create_message(message_text, user.thread_id)
         response_text = await post_generator.run_assistant(thread)
 
-    await call.message.answer(
-        text=response_text,
-    )
+    await call.message.answer(text=response_text, parse_mode="MarkdownV2")
 
 
 @router.callback_query(
@@ -155,7 +154,6 @@ async def chose_language_auto(call: CallbackQuery, uow: UnitOfWork, state: FSMCo
     post_type = main_state.split(":")[1]
     text = response.get("data")
 
-    # Определяем язык исходного текста
     try:
         detected_lang = detect(text)
     except Exception:
@@ -165,7 +163,6 @@ async def chose_language_auto(call: CallbackQuery, uow: UnitOfWork, state: FSMCo
         user = await uow.user_repo.get(call.from_user.id)
         thread = await post_generator.get_thread(user.thread_id)
 
-        # Формируем промпт в зависимости от языка
         if detected_lang == "ru":
             message_text = f"Создай {post_type} на русском языке на основе следующего текста: {text}"
         else:
@@ -176,4 +173,4 @@ async def chose_language_auto(call: CallbackQuery, uow: UnitOfWork, state: FSMCo
         await post_generator.create_message(message_text, user.thread_id)
         response_text = await post_generator.run_assistant(thread)
 
-    await call.message.answer(text=response_text)
+    await call.message.answer(text=response_text, parse_mode="MarkdownV2")
