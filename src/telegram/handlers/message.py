@@ -62,7 +62,7 @@ async def send_message_to_openai(
             await state.update_data({"data": response})
 
             await message.answer(
-                text=response,
+                text=escape_markdown_v2(response),
                 reply_markup=create_vertical_keyboard(
                     keyboards_text.chose_transcription_buttons
                 ),
