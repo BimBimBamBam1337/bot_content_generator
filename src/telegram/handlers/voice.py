@@ -43,7 +43,9 @@ async def send_voice_text_to_openai(
     else:
         await message.answer(
             text=transcription,
-            reply_markup=create_vertical_keyboard(keyboards_text.generate_text_buttons),
+            reply_markup=create_vertical_keyboard(
+                keyboards_text.chose_transcription_buttons
+            ),
         )
 
         await state.update_data({"data": transcription})
@@ -51,30 +53,3 @@ async def send_voice_text_to_openai(
     await bot.delete_message(
         chat_id=message.chat.id, message_id=msg_to_delete.message_id
     )
-
-
-@router.callback_query(F.data == "generate_text")
-async def callback_generate_text_to_openai(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
-):
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await post_generator.get_thread(user.thread_id)
-        msg_to_delete = await call.message.answer("Генерирую ответ...")
-
-        text = await state.get_data()
-        await post_generator.create_message(text.get("data"), user.thread_id)
-        response = await post_generator.run_assistant(thread)
-        await state.update_data({"data": response})
-
-        await call.message.answer(
-            text=escape_markdown_v2(response),
-            reply_markup=create_vertical_keyboard(
-                keyboards_text.chose_transcription_buttons
-            ),
-            parse_mode="MarkdownV2",
-        )
-        await bot.delete_message(
-            chat_id=call.message.chat.id,
-            message_id=msg_to_delete.message_id,
-        )
