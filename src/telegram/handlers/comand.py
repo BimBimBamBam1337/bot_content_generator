@@ -58,6 +58,16 @@ async def language(message: Message):
     )
 
 
+@router.message(Command("generate"))
+async def generate(message: Message):
+    """Команда для генерирования текста"""
+
+    await message.answer(
+        text=texts.generate_command_text,
+        reply_markup=create_vertical_keyboard(keyboards_text.assemble_posts_buttons),
+    )
+
+
 @router.message(Command("help"))
 async def help(message: Message):
     """Команда для получения инфы о боте"""
