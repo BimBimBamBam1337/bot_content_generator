@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 from langdetect import detect
 
-from src.client_openai import client
+from src.client_openai import post_generator
 from src.database.uow import UnitOfWork
 from src.telegram.filters import PromoCodeExpiredFilter
 from src.telegram.states import Chat, Promo, SendResponse
@@ -131,9 +131,9 @@ async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
 
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
-        thread = await client.get_thread(user.thread_id)
-        await client.create_message(message_text, user.thread_id)
-        response_text = await client.run_assistant(thread)
+        thread = await post_generator.get_thread(user.thread_id)
+        await post_generator.create_message(message_text, user.thread_id)
+        response_text = await post_generator.run_assistant(thread)
 
     await call.message.answer(
         text=response_text,
@@ -163,7 +163,7 @@ async def chose_language_auto(call: CallbackQuery, uow: UnitOfWork, state: FSMCo
 
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
-        thread = await client.get_thread(user.thread_id)
+        thread = await post_generator.get_thread(user.thread_id)
 
         # Формируем промпт в зависимости от языка
         if detected_lang == "ru":
@@ -173,7 +173,7 @@ async def chose_language_auto(call: CallbackQuery, uow: UnitOfWork, state: FSMCo
                 f"Create a {post_type} in English based on the following text: {text}"
             )
 
-        await client.create_message(message_text, user.thread_id)
-        response_text = await client.run_assistant(thread)
+        await post_generator.create_message(message_text, user.thread_id)
+        response_text = await post_generator.run_assistant(thread)
 
     await call.message.answer(text=response_text)

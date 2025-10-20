@@ -4,7 +4,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
-from src.client_openai import client
+from src.client_openai import post_generator
 from src.database.uow import UnitOfWork
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
@@ -19,7 +19,7 @@ async def start(message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext):
     async with uow:
         user_exist = await uow.user_repo.get(message.from_user.id)  # type:ignore
         if user_exist is None:
-            user_thread = await client.create_thread()
+            user_thread = await post_generator.create_thread()
             user = await uow.user_repo.create(message.from_user.id, user_thread.id)  # type: ignore
             logger.info(f"Registrate user {user.id}")
 

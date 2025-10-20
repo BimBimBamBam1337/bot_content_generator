@@ -50,4 +50,14 @@ class AssistantOpenAI:
         return new_message
 
 
-class WhisperOpenAi: ...
+class WhisperOpenAi:
+    def __init__(self, openai_key: str) -> None:
+        self.client = AsyncOpenAI(api_key=openai_key)
+        self.model = "whisper-1"
+
+    async def get_transcription(self, file_path: str) -> str:
+        with open(file_path, "rb") as voice:
+            transcription = await self.client.audio.transcriptions.create(
+                model=self.model, file=voice
+            )
+        return transcription.text
