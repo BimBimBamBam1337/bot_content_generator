@@ -16,7 +16,7 @@ router = Router()
 TMP_DIR.mkdir(parents=True, exist_ok=True)
 
 
-@router.message(F.voice)
+@router.message(F.voice, Chat.send_message)
 async def handle_voice_message(
     message: Message, bot: Bot, state: FSMContext, uow: UnitOfWork
 ):
