@@ -12,10 +12,10 @@ go_back_to_menu = {
 }
 assemble_posts_buttons = {
     "0": [
-        "Написать сценарий или пост (Instagram, Telegram, Threads  статью)",
+        "1. Написать сценарий ...",
         "assemble_posts",
     ],
-    "1": ["Собрать смысловую раскладку на 9–12 постов", "assemble_posts_for_layout"],
+    "1": ["2. Собрать смысловую расскладку...", "assemble_posts_for_layout"],
 }
 chose_language_buttons = {
     "0": ["Русский", "ru"],

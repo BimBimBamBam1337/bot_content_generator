@@ -2,8 +2,8 @@ import asyncio
 
 from aiogram.filters import StateFilter
 from loguru import logger
-from aiogram import Router, F
-from aiogram.types import CallbackQuery
+from aiogram import Router, Bot, F
+from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from langdetect import detect
 
@@ -120,7 +120,9 @@ async def prepare_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext)
 
 
 @router.callback_query(SendResponse.reels)
-async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def generate_reels(
+    message: Message, call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+):
     response = await state.get_data()
     state_data = response.get("call_data")
     text = response.get("data")
@@ -129,7 +131,7 @@ async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
     base_prompt = type_prompts.get(state_data, "Создай контент")
     language_text = language_map.get(chosen_language, "на языке исходного текста")
     message_text = f"{base_prompt} {language_text} на основе следующего текста: {text}"
-
+    msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         thread = await post_generator.get_thread(user.thread_id)
@@ -138,6 +140,9 @@ async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
 
     await call.message.answer(
         text=escape_markdown_v2(response_text), parse_mode="MarkdownV2"
+    )
+    await bot.delete_message(
+        chat_id=message.chat.id, message_id=msg_to_delete.message_id
     )
 
 
