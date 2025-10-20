@@ -12,6 +12,7 @@ from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
 from src.client_openai import post_generator, whisper
+from src.telegram.utils import escape_markdown_v2
 from src.constants import *
 
 
@@ -83,7 +84,7 @@ async def send_message_to_openai(
             response = await post_generator.run_assistant(thread)
             await state.update_data({"data": response})
             await message.answer(
-                text=response,
+                text=escape_markdown_v2(response),
                 reply_markup=create_vertical_keyboard(
                     keyboards_text.chose_transcription_buttons
                 ),
