@@ -5,7 +5,6 @@ from loguru import logger
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
-from aiogram import parse_mode
 from langdetect import detect
 
 from src.client_openai import post_generator
