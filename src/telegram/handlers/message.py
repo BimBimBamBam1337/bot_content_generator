@@ -68,31 +68,3 @@ async def send_message_to_openai(
                 ),
                 parse_mode="MarkdownV2",
             )
-        else:
-            file = await bot.get_file(message.voice.file_id)
-            file_path = file.file_path
-            file_url = f"https://api.telegram.org/file/bot{bot.token}/{file_path}"
-            local_path = TMP_DIR / f"{message.from_user.id}.ogg"
-
-            async with aiohttp.ClientSession() as session:
-                async with session.get(file_url) as resp:
-                    if resp.status == 200:
-                        with open(local_path, "wb") as f:
-                            f.write(await resp.read())
-
-            transcription = await whisper.get_transcription(str(local_path))
-            await post_generator.create_message(transcription, user.thread_id)
-            response = await post_generator.run_assistant(thread)
-            await state.update_data({"data": response})
-            await message.answer(
-                text=escape_markdown_v2(response),
-                reply_markup=create_vertical_keyboard(
-                    keyboards_text.chose_transcription_buttons
-                ),
-                parse_mode="MarkdownV2",
-            )
-            os.remove(local_path)
-
-        await bot.delete_message(
-            chat_id=message.chat.id, message_id=msg_to_delete.message_id
-        )

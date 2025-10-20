@@ -1,0 +1,77 @@
+import os
+import aiohttp
+
+from loguru import logger
+from aiogram import Router, Bot, F
+from aiogram.types import CallbackQuery, FSInputFile, Message, ReplyKeyboardRemove
+from aiogram.fsm.context import FSMContext
+
+from src.database.uow import UnitOfWork
+from src.telegram.states import Promo, Chat
+from src.telegram import texts
+from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
+from src.telegram.keyboards.inline import keyboards_text
+from src.client_openai import post_generator, whisper
+from src.telegram.utils import escape_markdown_v2
+from src.constants import *
+
+router = Router()
+
+
+@router.message(F.voice, Chat.send_message)
+async def send_message_to_openai(
+    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot
+):
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await post_generator.get_thread(user.thread_id)
+        msg_to_delete = await message.answer("Генерирую ответ...")
+        file = await bot.get_file(message.voice.file_id)
+        file_path = file.file_path
+        file_url = f"https://api.telegram.org/file/bot{bot.token}/{file_path}"
+        local_path = TMP_DIR / f"{message.from_user.id}.ogg"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(file_url) as resp:
+                if resp.status == 200:
+                    with open(local_path, "wb") as f:
+                        f.write(await resp.read())
+
+        transcription = await whisper.get_transcription(str(local_path))
+        await post_generator.create_message(transcription, user.thread_id)
+        await state.update_data({"data": transcription})
+        await message.answer(
+            text=escape_markdown_v2(transcription),
+            reply_markup=create_vertical_keyboard(keyboards_text.generate_text_buttons),
+            parse_mode="MarkdownV2",
+        )
+        os.remove(local_path)
+
+    await bot.delete_message(
+        chat_id=message.chat.id, message_id=msg_to_delete.message_id
+    )
+
+
+@router.callback_query(F.data == "generate_text", Chat.send_message)
+async def send_message_to_openai(
+    message: Message, call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+):
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await post_generator.get_thread(user.thread_id)
+        msg_to_delete = await message.answer("Генерирую ответ...")
+        text = await state.get_data()
+        await post_generator.create_message(text.get("data"), user.thread_id)
+        response = await post_generator.run_assistant(thread)
+        await state.update_data({"data": response})
+
+        await call.message.answer(
+            text=escape_markdown_v2(response),
+            reply_markup=create_vertical_keyboard(
+                keyboards_text.chose_transcription_buttons
+            ),
+            parse_mode="MarkdownV2",
+        )
+        await bot.delete_message(
+            chat_id=message.chat.id, message_id=msg_to_delete.message_id
+        )

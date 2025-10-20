@@ -38,3 +38,5 @@ chose_language_post_buttons = {
     "1": ["Английский", "eu"],
     "2": ["Соответствовать языку ввода", "match_language"],
 }
+
+generate_text_buttons = {"0": ["Сгенерировать текст", "generate_text"]}
