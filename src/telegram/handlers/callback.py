@@ -15,6 +15,7 @@ from src.telegram import texts
 from src.telegram.keyboards.inline import keyboards_text
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.prompts import language_map, type_prompts
+from src.telegram.utils import escape_markdown_v2
 from src.constants import *
 
 router = Router()
@@ -135,7 +136,9 @@ async def generate_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
         await post_generator.create_message(message_text, user.thread_id)
         response_text = await post_generator.run_assistant(thread)
 
-    await call.message.answer(text=response_text, parse_mode="MarkdownV2")
+    await call.message.answer(
+        text=escape_markdown_v2(response_text), parse_mode="MarkdownV2"
+    )
 
 
 @router.callback_query(
@@ -172,4 +175,6 @@ async def chose_language_auto(call: CallbackQuery, uow: UnitOfWork, state: FSMCo
         await post_generator.create_message(message_text, user.thread_id)
         response_text = await post_generator.run_assistant(thread)
 
-    await call.message.answer(text=response_text, parse_mode="MarkdownV2")
+    await call.message.answer(
+        text=escape_markdown_v2(response_text), parse_mode="MarkdownV2"
+    )
