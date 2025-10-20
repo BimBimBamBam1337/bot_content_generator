@@ -53,14 +53,15 @@ async def send_voice_text_to_openai(
     )
 
 
-@router.callback_query(F.data == "generate_text", Chat.send_message)
+@router.callback_query(F.data == "generate_text")
 async def callback_generate_text_to_openai(
-    message: Message, call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
     async with uow:
-        user = await uow.user_repo.get(message.from_user.id)
+        user = await uow.user_repo.get(call.from_user.id)
         thread = await post_generator.get_thread(user.thread_id)
-        msg_to_delete = await message.answer("Генерирую ответ...")
+        msg_to_delete = await call.message.answer("Генерирую ответ...")
+
         text = await state.get_data()
         await post_generator.create_message(text.get("data"), user.thread_id)
         response = await post_generator.run_assistant(thread)
@@ -74,5 +75,6 @@ async def callback_generate_text_to_openai(
             parse_mode="MarkdownV2",
         )
         await bot.delete_message(
-            chat_id=message.chat.id, message_id=msg_to_delete.message_id
+            chat_id=call.message.chat.id,
+            message_id=msg_to_delete.message_id,
         )
