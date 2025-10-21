@@ -21,5 +21,9 @@ class SendResponse(StatesGroup):
 class GenerateSemantic(StatesGroup):
     forward_1 = State()
     forward_2 = State()
+    forward_3 = State()
+    forward_4 = State()
     alcove = State()
     confirmed_main_goal = State()
+    confirmed_semantic = State()
+    confirmed_format_text = State()

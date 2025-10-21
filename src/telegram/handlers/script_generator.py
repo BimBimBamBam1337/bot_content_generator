@@ -89,4 +89,56 @@ async def confirmed_main_goal(message: Message, uow: UnitOfWork, state: FSMConte
         reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
         parse_mode="MarkdownV2",
     )
-    await state.set_state(GenerateSemantic.forward_2)
+    await state.set_state(GenerateSemantic.forward_3)
+
+
+@router.callback_query(F.data == "forward", GenerateSemantic.forward_3)
+async def three_semantic_lines(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    await call.message.answer(
+        text=texts.three_semantic_lines_text,
+    )
+    await state.set_state(GenerateSemantic.confirmed_semantic)
+
+
+@router.message(GenerateSemantic.confirmed_semantic)
+async def confirmed_semantic(message: Message, uow: UnitOfWork, state: FSMContext):
+    await state.update_data({"confirmed_semantic": message.text})
+    await message.answer(
+        text=texts.confirmed_semantic_text,
+        reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
+    )
+    await state.set_state(GenerateSemantic.forward_4)
+
+
+@router.callback_query(F.data == "forward", GenerateSemantic.forward_4)
+async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    await call.message.answer(
+        text=texts.format_text,
+    )
+    await state.set_state(GenerateSemantic.confirmed_semantic)
+
+
+@router.message(GenerateSemantic.confirmed_format_text)
+async def confirmed_format(message: Message, uow: UnitOfWork, state: FSMContext):
+    state_data = await state.get_data()
+    main_goal = state_data.get("main_goal")
+    confirmed_semantic = state_data.get("confirmed_semantic")
+    confirmed_format = message.text
+    await message.answer(
+        text=texts.confirmed_format_text,
+    )
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        await semantic_layout_generator.create_message(
+            alcove_prompt(main_goal, confirmed_semantic, confirmed_format),
+            user.thread_id,
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"main_goal": response})
+
+    await message.answer(
+        text=escape_markdown_v2(texts.confirmed_main_goal_text(response)),
+        reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
+        parse_mode="MarkdownV2",
+    )
