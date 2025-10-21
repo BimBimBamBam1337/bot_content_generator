@@ -115,20 +115,20 @@ async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.format_text,
     )
-    await state.set_state(GenerateSemantic.confirmed_format)
+    await state.set_state(GenerateSemantic.forward_5)
 
 
-@router.message(F.text, GenerateSemantic.confirmed_format)
+@router.message(F.text, GenerateSemantic.forward_5)
 async def confirmed_format(message: Message, uow: UnitOfWork, state: FSMContext):
     await message.answer(
         text=texts.confirmed_format_text,
         reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
     )
     await state.update_data({"confirmed_format": message.text})
-    await state.set_state(GenerateSemantic.forward_5)
+    await state.set_state(GenerateSemantic.forward_6)
 
 
-@router.callback_query(F.data == "forward", GenerateSemantic.forward_5)
+@router.callback_query(F.data == "forward", GenerateSemantic.forward_6)
 async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.content_text,

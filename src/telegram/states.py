@@ -24,6 +24,7 @@ class GenerateSemantic(StatesGroup):
     forward_3 = State()
     forward_4 = State()
     forward_5 = State()
+    forward_6 = State()
     alcove = State()
     confirmed_main_goal = State()
     confirmed_semantic = State()
