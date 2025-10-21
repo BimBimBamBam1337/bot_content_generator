@@ -14,7 +14,7 @@ from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
 from src.client_openai import semantic_layout_generator
 from src.telegram.utils import escape_markdown_v2
-from src.telegram.prompts import alcove_prompt
+from src.telegram.prompts import alcove_prompt, short_brief_prompt
 from src.constants import *
 
 
@@ -115,30 +115,46 @@ async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.format_text,
     )
-    await state.set_state(GenerateSemantic.confirmed_format_text)
+    await state.set_state(GenerateSemantic.confirmed_format)
 
 
-@router.message(GenerateSemantic.confirmed_format_text)
+@router.message(F.text, GenerateSemantic.confirmed_format)
 async def confirmed_format(message: Message, uow: UnitOfWork, state: FSMContext):
+    await message.answer(
+        text=texts.confirmed_format_text,
+        reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
+    )
+    await state.update_data({"confirmed_format": message.text})
+    await state.set_state(GenerateSemantic.forward_5)
+
+
+@router.callback_query(F.data == "forward", GenerateSemantic.forward_5)
+async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    await call.message.answer(
+        text=texts.content_text,
+    )
+    await state.set_state(GenerateSemantic.)
+
+
+@router.message(GenerateSemantic.)
+async def generate_response(message: Message, uow: UnitOfWork, state: FSMContext):
     state_data = await state.get_data()
     main_goal = state_data.get("main_goal")
     confirmed_semantic = state_data.get("confirmed_semantic")
-    confirmed_format = message.text
-    await message.answer(
-        text=texts.confirmed_format_text,
-    )
+    confirmed_format = state_data.get("confirmed_semantic")
+    content = message.text
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         await semantic_layout_generator.create_message(
-            alcove_prompt(main_goal, confirmed_semantic, confirmed_format),
+            short_brief_prompt(main_goal, confirmed_semantic, confirmed_format, content),
             user.thread_id,
         )
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"main_goal": response})
 
     await message.answer(
-        text=escape_markdown_v2(texts.confirmed_main_goal_text(response)),
+        text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
         parse_mode="MarkdownV2",
     )
