@@ -133,10 +133,10 @@ async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.content_text,
     )
-    await state.set_state(GenerateSemantic.)
+    await state.set_state(GenerateSemantic.confirmed_format)
 
 
-@router.message(GenerateSemantic.)
+@router.message(GenerateSemantic.confirmed_format)
 async def generate_response(message: Message, uow: UnitOfWork, state: FSMContext):
     state_data = await state.get_data()
     main_goal = state_data.get("main_goal")
@@ -147,7 +147,9 @@ async def generate_response(message: Message, uow: UnitOfWork, state: FSMContext
         user = await uow.user_repo.get(message.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         await semantic_layout_generator.create_message(
-            short_brief_prompt(main_goal, confirmed_semantic, confirmed_format, content),
+            short_brief_prompt(
+                main_goal, confirmed_semantic, confirmed_format, content
+            ),
             user.thread_id,
         )
         response = await semantic_layout_generator.run_assistant(thread)
