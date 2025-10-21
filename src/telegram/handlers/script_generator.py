@@ -88,5 +88,6 @@ async def confirmed_main_goal(message: Message, uow: UnitOfWork, state: FSMConte
     await message.answer(
         text=texts.confirmed_main_goal_text(without_md),
         reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
+        parse_mode="MarkdownV2",
     )
     await state.set_state(GenerateSemantic.forward_2)
