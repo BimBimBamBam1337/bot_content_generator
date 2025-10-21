@@ -75,3 +75,12 @@ async def help(message: Message):
     await message.answer(
         text=texts.help_text,
     )
+
+
+@router.message(Command("cancel"))
+async def help(message: Message, state: FSMContext):
+    """Команда для отмены дейстивия"""
+    await state.clear()
+    await message.answer(
+        text=texts.help_text,
+    )
