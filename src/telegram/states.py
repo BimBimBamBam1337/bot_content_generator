@@ -16,3 +16,10 @@ class SendResponse(StatesGroup):
     instagram = State()
     threads = State()
     article = State()
+
+
+class GenerateSemantic(StatesGroup):
+    forward_1 = State()
+    forward_2 = State()
+    alcove = State()
+    confirmed_main_goal = State()

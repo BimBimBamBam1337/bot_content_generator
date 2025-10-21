@@ -21,6 +21,13 @@ chose_language_buttons = {
     "0": ["Русский", "ru"],
     "1": ["English", "eu"],
 }
+forward_buttnon = {
+    "1": ["Далее", "forward"],
+}
+begin_breaf_buttons = {
+    "0": ["🚀 Начать бриф", "breaf_begin"],
+    "1": ["Что это?", "help"],
+}
 chose_transcription_buttons = {
     "0": ["Сценарий для reels", "reels"],
     "1": ["Пост Telegram", "telegram"],
