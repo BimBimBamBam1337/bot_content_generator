@@ -83,10 +83,9 @@ async def confirmed_main_goal(message: Message, uow: UnitOfWork, state: FSMConte
         )
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"main_goal": response})
-        without_md = escape_markdown_v2(response)
 
     await message.answer(
-        text=texts.confirmed_main_goal_text(without_md),
+        text=escape_markdown_v2(texts.confirmed_main_goal_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
         parse_mode="MarkdownV2",
     )
