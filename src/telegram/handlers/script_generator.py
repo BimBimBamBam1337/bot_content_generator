@@ -55,7 +55,7 @@ async def alcove(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 
 @router.message(GenerateSemantic.alcove)
-async def confirmed_alcove(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def confirmed_alcove(message: Message, uow: UnitOfWork, state: FSMContext):
     await state.update_data({"alcove": message.text})
     await call.message.answer(
         text=texts.confirmed_text,

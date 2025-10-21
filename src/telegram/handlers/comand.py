@@ -82,5 +82,5 @@ async def cancel(message: Message, state: FSMContext):
     """Команда для отмены дейстивия"""
     await state.clear()
     await message.answer(
-        text=texts.help_text,
+        text="Отменил действие",
     )
