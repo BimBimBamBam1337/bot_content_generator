@@ -22,7 +22,7 @@ def alcove_prompt(*args):
 def short_brief_prompt(*args):
     texts = "\n".join(f"{i + 1}. {text}" for i, text in enumerate(args))
     return f"""
-Сделай краткий бриф из пунктов, который я собрал ниже в формате:
+Сделай краткий бриф из пунктов, который я собрал ниже в формате, без исходного текста:
 
 {texts}
 
