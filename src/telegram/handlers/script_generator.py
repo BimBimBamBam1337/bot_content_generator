@@ -115,7 +115,7 @@ async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.format_text,
     )
-    await state.set_state(GenerateSemantic.confirmed_semantic)
+    await state.set_state(GenerateSemantic.confirmed_format_text)
 
 
 @router.message(GenerateSemantic.confirmed_format_text)
