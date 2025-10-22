@@ -121,7 +121,7 @@ async def prepare_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext)
 
 @router.callback_query(SendResponse.reels)
 async def generate_reels(
-    message: Message, call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
     response = await state.get_data()
     state_data = response.get("call_data")
@@ -131,7 +131,7 @@ async def generate_reels(
     base_prompt = type_prompts.get(state_data, "Создай контент")
     language_text = language_map.get(chosen_language, "на языке исходного текста")
     message_text = f"{base_prompt} {language_text} на основе следующего текста: {text}"
-    msg_to_delete = await message.answer("Генерирую ответ...")
+    msg_to_delete = await call.message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         thread = await post_generator.get_thread(user.thread_id)
@@ -142,7 +142,7 @@ async def generate_reels(
         text=escape_markdown_v2(response_text), parse_mode="MarkdownV2"
     )
     await bot.delete_message(
-        chat_id=message.chat.id, message_id=msg_to_delete.message_id
+        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
 
 

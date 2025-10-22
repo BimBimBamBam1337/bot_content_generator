@@ -137,7 +137,7 @@ async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 
 @router.message(GenerateSemantic.confirmed_format)
-async def generate_response(message: Message, uow: UnitOfWork, state: FSMContext):
+async def generate_brief(message: Message, uow: UnitOfWork, state: FSMContext):
     state_data = await state.get_data()
     main_goal = state_data.get("main_goal")
     confirmed_semantic = state_data.get("confirmed_semantic")

@@ -47,3 +47,8 @@ chose_language_post_buttons = {
 }
 
 generate_text_buttons = {"0": ["Сгенерировать текст", "generate_text"]}
+
+begin_breaf_buttons = {
+    "0": ["Все верно", "all_right"],
+    "1": ["Исправить пункт", "change"],
+}
