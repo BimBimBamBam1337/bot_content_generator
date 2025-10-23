@@ -212,7 +212,7 @@ async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext, bo
 async def generate_semantic_lines(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
-    msg_to_delete = await message.answer("Генерирую ответ...")
+    msg_to_delete = await call.message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
@@ -267,7 +267,7 @@ async def changed_semantic_lines(
     await message.answer(
         text=escape_markdown_v2(response),
         reply_markup=create_vertical_keyboard(
-            keyboards_text.confirm_begin_brief_buttons
+            keyboards_text.confirm_semantic_line_buttons
         ),
         parse_mode="MarkdownV2",
     )
@@ -281,7 +281,7 @@ async def changed_semantic_lines(
 async def generate_layout(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
-
+    msg_to_delete = await call.message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
