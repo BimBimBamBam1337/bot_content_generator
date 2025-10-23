@@ -49,6 +49,7 @@ class AssistantOpenAI:
 
         if run.status != "completed":
             print(f"⚠️ Run status: {run.status}")
+            print(run)
             return "Не удалось завершить генерацию."
 
         await asyncio.sleep(1)
