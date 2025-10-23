@@ -129,7 +129,7 @@ async def confirmed_format(message: Message, uow: UnitOfWork, state: FSMContext)
 
 
 @router.callback_query(F.data == "forward", GenerateSemantic.forward_6)
-async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def content_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.content_text,
     )
@@ -137,7 +137,10 @@ async def format_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 
 @router.message(GenerateSemantic.confirmed_format)
-async def generate_brief(message: Message, uow: UnitOfWork, state: FSMContext):
+async def generate_brief(
+    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot
+):
+    msg_to_delete = await message.answer("Генерирую ответ...")
     state_data = await state.get_data()
     main_goal = state_data.get("main_goal")
     confirmed_semantic = state_data.get("confirmed_semantic")
@@ -162,6 +165,9 @@ async def generate_brief(message: Message, uow: UnitOfWork, state: FSMContext):
         ),
         parse_mode="MarkdownV2",
     )
+    await bot.delete_message(
+        chat_id=message.chat.id, message_id=msg_to_delete.message_id
+    )
 
 
 @router.callback_query(F.data == "change_brief")
@@ -174,13 +180,14 @@ async def regenerate_brief(call: CallbackQuery, uow: UnitOfWork, state: FSMConte
 
 
 @router.message(GenerateSemantic.regenerate_brief)
-async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext):
+async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot):
+    msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         change_brief = await state.get_data()
         await semantic_layout_generator.create_message(
-            prompts.regenerate_brief_prompt(
+            prompts.regenerate_response_prompt(
                 message.text, change_brief.get("short_brief")
             ),
             user.thread_id,
@@ -196,13 +203,16 @@ async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext):
         parse_mode="MarkdownV2",
     )
     await state.set_state(GenerateSemantic.regenerate_brief)
+    await bot.delete_message(
+        chat_id=message.chat.id, message_id=msg_to_delete.message_id
+    )
 
 
 @router.callback_query(F.data == "all_right")
 async def generate_semantic_lines(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
-
+    msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
@@ -220,6 +230,9 @@ async def generate_semantic_lines(
         ),
         parse_mode="MarkdownV2",
     )
+    await bot.delete_message(
+        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
+    )
 
 
 @router.callback_query(F.data == "change_form")
@@ -227,14 +240,47 @@ async def regenerate_semantic_lines(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext
 ):
     await call.message.answer(
-        text=texts.regenerate_brief_text,
+        text=texts.regenerate_semantic_lines_text,
+        parse_mode="MarkdownV2",
+    )
+    await state.set_state(GenerateSemantic.regenerate_semantic_lines)
+
+
+@router.message(GenerateSemantic.regenerate_semantic_lines)
+async def changed_semantic_lines(
+    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot
+):
+    msg_to_delete = await message.answer("Генерирую ответ...")
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        change_semantic_lines = await state.get_data()
+        await semantic_layout_generator.create_message(
+            prompts.regenerate_response_prompt(
+                message.text, change_semantic_lines.get("three_semantic_line_prompt")
+            ),
+            user.thread_id,
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"three_semantic_line_prompt": response})
+
+    await message.answer(
+        text=escape_markdown_v2(response),
+        reply_markup=create_vertical_keyboard(
+            keyboards_text.confirm_begin_brief_buttons
+        ),
         parse_mode="MarkdownV2",
     )
     await state.set_state(GenerateSemantic.regenerate_brief)
+    await bot.delete_message(
+        chat_id=message.chat.id, message_id=msg_to_delete.message_id
+    )
 
 
 @router.callback_query(F.data == "go_forward")
-async def generate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def generate_layout(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+):
 
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
@@ -250,6 +296,9 @@ async def generate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContex
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
         parse_mode="MarkdownV2",
+    )
+    await bot.delete_message(
+        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
 
 

@@ -30,3 +30,4 @@ class GenerateSemantic(StatesGroup):
     confirmed_semantic = State()
     confirmed_format = State()
     regenerate_brief = State()
+    regenerate_semantic_lines = State()

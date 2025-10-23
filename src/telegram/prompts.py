@@ -37,7 +37,7 @@ def short_brief_prompt(*args):
 """
 
 
-def regenerate_brief_prompt(text: str, response: str) -> str:
+def regenerate_response_prompt(text: str, response: str) -> str:
     return f"""
 {response}
 
