@@ -316,7 +316,8 @@ async def regenerate_layout(
             prompts.regenerate_response_prompt(layout), user.thread_id
         )
         response = await semantic_layout_generator.run_assistant(thread)
-        await state.update_data({"layout_prompt": response})
+
+    await state.update_data({"layout_prompt": response})
 
     await call.message.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
