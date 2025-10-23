@@ -39,7 +39,8 @@ class UserRepository:
         users = result.scalars().all()
         return list(users)
 
-    async def update_user_to_admin(self, user_id: int) -> None:
+    async def update_user(self, user_id: int, **kwargs) -> None:
         await self.session.execute(
-            update(User).where(User.id == user_id).values(is_admin=True)
+            update(User).where(User.id == user_id).values(**kwargs)
         )
+        await self.session.flush()

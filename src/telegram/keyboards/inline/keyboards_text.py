@@ -48,7 +48,15 @@ chose_language_post_buttons = {
 
 generate_text_buttons = {"0": ["Сгенерировать текст", "generate_text"]}
 
-begin_breaf_buttons = {
+confirm_begin_brief_buttons = {
     "0": ["Все верно", "all_right"],
-    "1": ["Исправить пункт", "change"],
+    "1": ["Исправить пункт", "change_breaf"],
+}
+confirm_semantic_line_buttons = {
+    "0": ["✏️ Править формулировки", "change_form"],
+    "1": ["✅ Да, идём дальше", "go_forward"],
+}
+confirm_layout_buttons = {
+    "0": ["✅ Утвердить раскладку", "confirm_layout"],
+    "1": ["🔄 Перегенерировать сетку", "regenerate_grid"],
 }

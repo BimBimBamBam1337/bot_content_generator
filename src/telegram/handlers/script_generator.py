@@ -1,6 +1,5 @@
 import os
 import asyncio
-import aiohttp
 
 from loguru import logger
 from aiogram import Router, Bot, F
@@ -14,7 +13,7 @@ from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
 from src.client_openai import semantic_layout_generator
 from src.telegram.utils import escape_markdown_v2
-from src.telegram.prompts import alcove_prompt, short_brief_prompt
+from src.telegram import prompts
 from src.constants import *
 
 
@@ -79,7 +78,8 @@ async def confirmed_main_goal(message: Message, uow: UnitOfWork, state: FSMConte
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         alcove_text = await state.get_data()
         await semantic_layout_generator.create_message(
-            alcove_prompt(alcove_text.get("alcove"), message.text), user.thread_id
+            prompts.alcove_prompt(alcove_text.get("alcove"), message.text),
+            user.thread_id,
         )
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"main_goal": response})
@@ -147,16 +147,153 @@ async def generate_brief(message: Message, uow: UnitOfWork, state: FSMContext):
         user = await uow.user_repo.get(message.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         await semantic_layout_generator.create_message(
-            short_brief_prompt(
+            prompts.short_brief_prompt(
                 main_goal, confirmed_semantic, confirmed_format, content
             ),
             user.thread_id,
         )
         response = await semantic_layout_generator.run_assistant(thread)
-        await state.update_data({"main_goal": response})
+        await state.update_data({"short_brief": response})
 
     await message.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
-        reply_markup=create_vertical_keyboard(keyboards_text.forward_buttnon),
+        reply_markup=create_vertical_keyboard(
+            keyboards_text.confirm_begin_brief_buttons
+        ),
+        parse_mode="MarkdownV2",
+    )
+
+
+@router.callback_query(F.data == "change_brief")
+async def regenerate_brief(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+
+    # async with uow:
+    #     user = await uow.user_repo.get(message.from_user.id)
+    #     thread = await semantic_layout_generator.get_thread(user.thread_id)
+    #     await semantic_layout_generator.create_message(
+    #         prompts.regenerate_brief_prompt(),
+    #         user.thread_id,
+    #     )
+    #     response = await semantic_layout_generator.run_assistant(thread)
+    #     await state.update_data({"three_semantic_line_prompt": response})
+
+    await call.message.answer(
+        text=texts.regenerate_brief_text,
+        reply_markup=create_vertical_keyboard(
+            keyboards_text.confirm_begin_brief_buttons
+        ),
+        parse_mode="MarkdownV2",
+    )
+    await state.set_state(GenerateSemantic.regenerate_brief)
+
+
+@router.message(GenerateSemantic.regenerate_brief)
+async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext):
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        change_brief = await state.get_data()
+        await semantic_layout_generator.create_message(
+            prompts.regenerate_brief_prompt(
+                message.text, change_brief.get("short_brief")
+            ),
+            user.thread_id,
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"short_brief": response})
+
+    await message.answer(
+        text=escape_markdown_v2(response),
+        reply_markup=create_vertical_keyboard(
+            keyboards_text.confirm_begin_brief_buttons
+        ),
+        parse_mode="MarkdownV2",
+    )
+    await state.set_state(GenerateSemantic.regenerate_brief)
+
+
+@router.callback_query(F.data == "all_right")
+async def generate_semantic_lines(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext
+):
+
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        await semantic_layout_generator.create_message(
+            prompts.three_semantic_line_prompt,
+            user.thread_id,
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"three_semantic_line_prompt": response})
+
+    await message.answer(
+        text=escape_markdown_v2(texts.short_brief_text(response)),
+        reply_markup=create_vertical_keyboard(
+            keyboards_text.confirm_semantic_line_buttons
+        ),
+        parse_mode="MarkdownV2",
+    )
+
+
+@router.callback_query(F.data == "change_form")
+async def regenerate_semantic_lines(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext
+):
+
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        await semantic_layout_generator.create_message(
+            prompts.three_semantic_line_prompt,
+            user.thread_id,
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"three_semantic_line_prompt": response})
+
+    await message.answer(
+        text=escape_markdown_v2(texts.short_brief_text(response)),
+        reply_markup=create_vertical_keyboard(
+            keyboards_text.confirm_semantic_line_buttons
+        ),
+        parse_mode="MarkdownV2",
+    )
+
+
+@router.callback_query(F.data == "go_forward")
+async def generate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        await semantic_layout_generator.create_message(
+            prompts.layout_prompt,
+            user.thread_id,
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"layout_prompt": response})
+
+    await message.answer(
+        text=escape_markdown_v2(texts.short_brief_text(response)),
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
+        parse_mode="MarkdownV2",
+    )
+
+
+@router.callback_query(F.data == "regenerate_grid")
+async def regenerate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        await semantic_layout_generator.create_message(
+            prompts.layout_prompt,
+            user.thread_id,
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"layout_prompt": response})
+
+    await message.answer(
+        text=escape_markdown_v2(texts.short_brief_text(response)),
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
         parse_mode="MarkdownV2",
     )

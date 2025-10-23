@@ -29,3 +29,4 @@ class GenerateSemantic(StatesGroup):
     confirmed_main_goal = State()
     confirmed_semantic = State()
     confirmed_format = State()
+    regenerate_brief = State()
