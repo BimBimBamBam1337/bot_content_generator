@@ -214,7 +214,7 @@ async def generate_semantic_lines(
         await state.update_data({"three_semantic_line_prompt": response})
 
     await call.message.answer(
-        text=escape_markdown_v2(texts.short_brief_text(response)),
+        text=escape_markdown_v2(texts.semantic_text(response)),
         reply_markup=create_vertical_keyboard(
             keyboards_text.confirm_semantic_line_buttons
         ),
@@ -226,24 +226,11 @@ async def generate_semantic_lines(
 async def regenerate_semantic_lines(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext
 ):
-
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
-        await semantic_layout_generator.create_message(
-            prompts.three_semantic_line_prompt,
-            user.thread_id,
-        )
-        response = await semantic_layout_generator.run_assistant(thread)
-        await state.update_data({"three_semantic_line_prompt": response})
-
-    await call.answer(
-        text=escape_markdown_v2(texts.short_brief_text(response)),
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.confirm_semantic_line_buttons
-        ),
+    await call.message.answer(
+        text=texts.regenerate_brief_text,
         parse_mode="MarkdownV2",
     )
+    await state.set_state(GenerateSemantic.regenerate_brief)
 
 
 @router.callback_query(F.data == "go_forward")
@@ -268,18 +255,8 @@ async def generate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContex
 
 @router.callback_query(F.data == "regenerate_grid")
 async def regenerate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
-        await semantic_layout_generator.create_message(
-            prompts.layout_prompt,
-            user.thread_id,
-        )
-        response = await semantic_layout_generator.run_assistant(thread)
-        await state.update_data({"layout_prompt": response})
-
-    await message.answer(
-        text=escape_markdown_v2(texts.short_brief_text(response)),
-        reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
+    await call.message.answer(
+        text=texts.regenerate_brief_text,
         parse_mode="MarkdownV2",
     )
+    await state.set_state(GenerateSemantic.regenerate_brief)
