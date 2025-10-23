@@ -307,7 +307,7 @@ async def generate_layout(
 async def regenerate_layout(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
-    msg_to_delete = await call.message.answer("Генерирую ответ...")
+    msg_to_delete = await call.message.answer("Пересобираю раскладку...")
     layout = await state.get_data()
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
