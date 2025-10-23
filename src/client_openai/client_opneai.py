@@ -46,6 +46,7 @@ class AssistantOpenAI:
                 thread_id=thread.id, run_id=run.id
             )
         message = await self.client.beta.threads.messages.list(thread_id=thread.id)
+        print("MESSAGES:", message.data)
         new_message = message.data[0].content[0].text.value
         return new_message
 
