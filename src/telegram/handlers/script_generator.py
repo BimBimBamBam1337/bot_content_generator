@@ -187,7 +187,7 @@ async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext, bo
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         change_brief = await state.get_data()
         await semantic_layout_generator.create_message(
-            prompts.regenerate_response_prompt(
+            prompts.regenerate_response_prompt_with_comments(
                 message.text, change_brief.get("short_brief")
             ),
             user.thread_id,
@@ -256,7 +256,7 @@ async def changed_semantic_lines(
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         change_semantic_lines = await state.get_data()
         await semantic_layout_generator.create_message(
-            prompts.regenerate_response_prompt(
+            prompts.regenerate_response_prompt_with_comments(
                 message.text, change_semantic_lines.get("three_semantic_line_prompt")
             ),
             user.thread_id,
@@ -304,9 +304,26 @@ async def generate_layout(
 
 
 @router.callback_query(F.data == "regenerate_grid")
-async def regenerate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def regenerate_layout(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+):
+    msg_to_delete = await call.message.answer("Генерирую ответ...")
+    layout = await state.get_data()
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
+        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        await semantic_layout_generator.create_message(
+            prompts.regenerate_response_prompt(layout), user.thread_id
+        )
+        response = await semantic_layout_generator.run_assistant(thread)
+        await state.update_data({"layout_prompt": response})
+
+    await bot.delete_message(
+        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
+    )
+
     await call.message.answer(
-        text=texts.regenerate_brief_text,
+        text=escape_markdown_v2(texts.short_brief_text(response)),
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
         parse_mode="MarkdownV2",
     )
-    await state.set_state(GenerateSemantic.regenerate_brief)

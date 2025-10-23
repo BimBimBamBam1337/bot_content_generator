@@ -37,7 +37,7 @@ def short_brief_prompt(*args):
 """
 
 
-def regenerate_response_prompt(text: str, response: str) -> str:
+def regenerate_response_prompt_with_comments(text: str, response: str) -> str:
     return f"""
 {response}
 
@@ -60,4 +60,15 @@ three_semantic_line_prompt = """
 """
 layout_prompt = """
 Собери смысловую раскладку из 12 постов, где каждая публикация логично связана с другими и с учётом предыдущих сообщений, не привышая лимит символов в 4096
+"""
+
+
+def regenerate_response_prompt(response: str) -> str:
+    return f"""
+{response}
+
+На основе текста више сгенерируй новый текст при этом сохранив форматирование, эмодзи, заголовки и структуру.
+
+
+Верни итоговый текст целиком, в том же виде и порядке, где обновлены только нужные фрагменты.
 """
