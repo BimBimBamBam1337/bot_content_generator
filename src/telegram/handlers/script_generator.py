@@ -311,12 +311,15 @@ async def regenerate_layout(
     layout = await state.get_data()
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
+        print("got_user")
         thread = await semantic_layout_generator.get_thread(user.thread_id)
+        print("got_thread")
         await semantic_layout_generator.create_message(
             prompts.regenerate_response_prompt(layout), user.thread_id
         )
+        print("got_message")
         response = await semantic_layout_generator.run_assistant(thread)
-
+        print("got_response")
     await state.update_data({"layout_prompt": response})
 
     await call.message.answer(
