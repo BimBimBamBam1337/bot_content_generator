@@ -166,17 +166,6 @@ async def generate_brief(message: Message, uow: UnitOfWork, state: FSMContext):
 
 @router.callback_query(F.data == "change_brief")
 async def regenerate_brief(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-
-    # async with uow:
-    #     user = await uow.user_repo.get(message.from_user.id)
-    #     thread = await semantic_layout_generator.get_thread(user.thread_id)
-    #     await semantic_layout_generator.create_message(
-    #         prompts.regenerate_brief_prompt(),
-    #         user.thread_id,
-    #     )
-    #     response = await semantic_layout_generator.run_assistant(thread)
-    #     await state.update_data({"three_semantic_line_prompt": response})
-
     await call.message.answer(
         text=texts.regenerate_brief_text,
         parse_mode="MarkdownV2",
@@ -215,7 +204,7 @@ async def generate_semantic_lines(
 ):
 
     async with uow:
-        user = await uow.user_repo.get(message.from_user.id)
+        user = await uow.user_repo.get(call.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         await semantic_layout_generator.create_message(
             prompts.three_semantic_line_prompt,
@@ -224,7 +213,7 @@ async def generate_semantic_lines(
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"three_semantic_line_prompt": response})
 
-    await message.answer(
+    await call.message.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(
             keyboards_text.confirm_semantic_line_buttons
@@ -239,7 +228,7 @@ async def regenerate_semantic_lines(
 ):
 
     async with uow:
-        user = await uow.user_repo.get(message.from_user.id)
+        user = await uow.user_repo.get(call.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         await semantic_layout_generator.create_message(
             prompts.three_semantic_line_prompt,
@@ -248,7 +237,7 @@ async def regenerate_semantic_lines(
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"three_semantic_line_prompt": response})
 
-    await message.answer(
+    await call.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(
             keyboards_text.confirm_semantic_line_buttons
@@ -261,7 +250,7 @@ async def regenerate_semantic_lines(
 async def generate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
     async with uow:
-        user = await uow.user_repo.get(message.from_user.id)
+        user = await uow.user_repo.get(call.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         await semantic_layout_generator.create_message(
             prompts.layout_prompt,
@@ -270,7 +259,7 @@ async def generate_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContex
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"layout_prompt": response})
 
-    await message.answer(
+    await call.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
         parse_mode="MarkdownV2",
