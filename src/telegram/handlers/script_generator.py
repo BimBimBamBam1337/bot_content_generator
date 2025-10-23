@@ -318,10 +318,6 @@ async def regenerate_layout(
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"layout_prompt": response})
 
-    await bot.delete_message(
-        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
-    )
-
     await call.message.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
