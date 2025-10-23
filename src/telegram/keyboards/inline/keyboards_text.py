@@ -50,7 +50,7 @@ generate_text_buttons = {"0": ["Сгенерировать текст", "generat
 
 confirm_begin_brief_buttons = {
     "0": ["Все верно", "all_right"],
-    "1": ["Исправить пункт", "change_breaf"],
+    "1": ["Исправить пункт", "change_brief"],
 }
 confirm_semantic_line_buttons = {
     "0": ["✏️ Править формулировки", "change_form"],
