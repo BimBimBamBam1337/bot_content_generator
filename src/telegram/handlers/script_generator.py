@@ -282,23 +282,24 @@ async def generate_layout(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
 ):
     msg_to_delete = await call.message.answer("Генерирую ответ...")
+
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         thread = await semantic_layout_generator.get_thread(user.thread_id)
         await semantic_layout_generator.create_message(
-            prompts.layout_prompt,
-            user.thread_id,
+            prompts.layout_prompt, user.thread_id
         )
         response = await semantic_layout_generator.run_assistant(thread)
         await state.update_data({"layout_prompt": response})
 
-    await call.answer(
+    await bot.delete_message(
+        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
+    )
+
+    await call.message.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
         parse_mode="MarkdownV2",
-    )
-    await bot.delete_message(
-        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
 
 
