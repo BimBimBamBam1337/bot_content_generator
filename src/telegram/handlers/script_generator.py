@@ -179,9 +179,6 @@ async def regenerate_brief(call: CallbackQuery, uow: UnitOfWork, state: FSMConte
 
     await call.message.answer(
         text=texts.regenerate_brief_text,
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.confirm_begin_brief_buttons
-        ),
         parse_mode="MarkdownV2",
     )
     await state.set_state(GenerateSemantic.regenerate_brief)
