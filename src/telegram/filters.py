@@ -13,8 +13,7 @@ class PromoCodeExpiredFilter(BaseFilter):
 
             if not user.used_promo_codes:  # type: ignore
                 return False
-
-            promo_code, used_date_str = next(iter(user.used_promo_codes.items()))  # type: ignore
+            promo_code, used_date_str = next(reversed(user.used_promo_codes.items()))
             code = await uow.promo_code_repo.get(promo_code)
             used_date = datetime.fromisoformat(used_date_str)
 
