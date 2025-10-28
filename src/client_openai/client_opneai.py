@@ -48,8 +48,6 @@ class AssistantOpenAI:
             )
 
         if run.status != "completed":
-            print(f"⚠️ Run status: {run.status}")
-            print(run)
             return "Не удалось завершить генерацию."
 
         await asyncio.sleep(1)
@@ -57,7 +55,6 @@ class AssistantOpenAI:
         message = await self.client.beta.threads.messages.list(thread_id=thread.id)
 
         if not message.data:
-            print("⚠️ Нет сообщений от ассистента.")
             return "Не удалось получить ответ."
 
         for msg in message.data:
@@ -67,7 +64,6 @@ class AssistantOpenAI:
                 except (IndexError, AttributeError):
                     continue
 
-        print("⚠️ Ассистент ничего не вернул.")
         return "Пустой ответ от ассистента."
 
 

@@ -12,7 +12,7 @@ from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
 from src.client_openai import semantic_layout_generator
-from src.telegram.utils import escape_markdown_v2
+from src.telegram.utils import escape_markdown_v2, generate_semantic_layout_generator
 from src.telegram import prompts
 from src.constants import *
 
@@ -22,6 +22,7 @@ router = Router()
 
 @router.callback_query(F.data == "assemble_posts_for_layout")
 async def assemble_posts_for_layout(call: CallbackQuery, uow: UnitOfWork):
+
     await call.message.answer(
         text=texts.assemble_posts_for_layout_text,
         reply_markup=create_vertical_keyboard(keyboards_text.begin_breaf_buttons),
@@ -283,14 +284,13 @@ async def generate_layout(
 ):
     msg_to_delete = await call.message.answer("Генерирую ответ...")
 
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
-        await semantic_layout_generator.create_message(
-            prompts.layout_prompt, user.thread_id
-        )
-        response = await semantic_layout_generator.run_assistant(thread)
-        await state.update_data({"layout_prompt": response})
+    response = await generate_semantic_layout_generator(
+        uow,
+        call,
+        prompts.layout_prompt,
+        semantic_layout_generator,
+    )
+    await state.update_data({"layout_prompt": response})
 
     await bot.delete_message(
         chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
@@ -309,13 +309,12 @@ async def regenerate_layout(
 ):
     msg_to_delete = await call.message.answer("Пересобираю раскладку...")
     layout = await state.get_data()
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
-        await semantic_layout_generator.create_message(
-            prompts.regenerate_response_prompt(layout), user.thread_id
-        )
-        response = await semantic_layout_generator.run_assistant(thread)
+    response = await generate_semantic_layout_generator(
+        uow,
+        call,
+        prompts.regenerate_response_prompt(layout.get("layout_prompt")),
+        semantic_layout_generator,
+    )
     await state.update_data({"layout_prompt": response})
 
     await call.message.answer(

@@ -56,19 +56,17 @@ async def send_message_to_openai(
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
         thread = await post_generator.get_thread(user.thread_id)
+        await post_generator.create_message(message.text, user.thread_id)
+        response = await post_generator.run_assistant(thread)
+        await state.update_data({"data": response})
 
-        if message.text:
-            await post_generator.create_message(message.text, user.thread_id)
-            response = await post_generator.run_assistant(thread)
-            await state.update_data({"data": response})
-
-            await message.answer(
-                text=escape_markdown_v2(response),
-                reply_markup=create_vertical_keyboard(
-                    keyboards_text.chose_transcription_buttons
-                ),
-                parse_mode="MarkdownV2",
-            )
+        await message.answer(
+            text=escape_markdown_v2(response),
+            reply_markup=create_vertical_keyboard(
+                keyboards_text.chose_transcription_buttons
+            ),
+            parse_mode="MarkdownV2",
+        )
     await bot.delete_message(
         chat_id=message.chat.id, message_id=msg_to_delete.message_id
     )
