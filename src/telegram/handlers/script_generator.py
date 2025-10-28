@@ -13,7 +13,9 @@ from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
 from src.client_openai import semantic_layout_generator
 from src.telegram.utils import escape_markdown_v2, generate_semantic_layout_generator
+from src.telegram.states import Chat
 from src.telegram import prompts
+
 from src.constants import *
 
 
@@ -322,3 +324,13 @@ async def regenerate_layout(
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
         parse_mode="MarkdownV2",
     )
+
+
+@router.callback_query(F.data == "confirm_layout")
+async def confirm_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+
+    await call.message.answer(
+        text=texts.final_semantic_layout_text,
+        reply_markup=create_vertical_keyboard(keyboards_text.begin_breaf_buttons),
+    )
+    await state.set_state(Chat.send_message)
