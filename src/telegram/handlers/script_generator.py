@@ -331,6 +331,5 @@ async def confirm_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext
 
     await call.message.answer(
         text=texts.final_semantic_layout_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.begin_breaf_buttons),
     )
     await state.set_state(Chat.send_message)
