@@ -87,33 +87,30 @@ async def reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 @router.callback_query(F.data == "telegram")
 async def telegram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    state_data = await state.get_data()
     await call.message.answer(
-        text=texts.telegram_text,
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.chose_language_post_buttons
-        ),
+        text=texts.type_post(state_data.get("data"), call.data),
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
     await state.set_state(SendResponse.telegram)
 
 
 @router.callback_query(F.data == "instagram")
 async def instagram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    state_data = await state.get_data()
     await call.message.answer(
-        text=texts.instagram_text,
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.chose_language_post_buttons
-        ),
+        text=texts.type_post(state_data.get("data"), call.data),
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
     await state.set_state(SendResponse.instagram)
 
 
 @router.callback_query(F.data == "threads")
 async def threads(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    state_data = await state.get_data()
     await call.message.answer(
-        text=texts.threads_text,
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.chose_language_post_buttons
-        ),
+        text=texts.type_post(state_data.get("data"), call.data),
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
     await state.set_state(SendResponse.threads)
 
