@@ -63,9 +63,7 @@ async def back_to_menu(
 
 
 @router.callback_query(F.data == "assemble_posts", PromoCodeExpiredFilter())
-async def assemble_posts(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
-):
+async def assemble_posts(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         if user:

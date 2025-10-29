@@ -99,22 +99,28 @@ async def send_message_to_openai(
         SendResponse.telegram,
     ),
 )
-async def change_post(message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot):
+async def change_post(
+    message: Message,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
+):
     response = await state.get_data()
     text = response.get("data")
     msg_to_delete = await message.answer("Генерирую ответ...")
 
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
-        thread = await post_generator.get_thread(user.thread_id)
-        await post_generator.create_message(
+        thread = await assistant.get_thread(user.thread_id)
+        await assistant.create_message(
             prompts.regenerate_response_prompt_with_comments(
                 text,
                 message.text,
             ),
             user.thread_id,
         )
-        response = await post_generator.run_assistant(thread)
+        response = await assistant.run_assistant(thread)
         await state.update_data({"data": response})
 
         await message.answer(
