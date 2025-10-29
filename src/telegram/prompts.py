@@ -80,5 +80,5 @@ def regenerate_response_prompt(topic: str) -> str:
 
 def prompt_text(post_type: str, text: str | None) -> str:
     return f"""
-Создай {post_type} на основе следующего текста: {text}
+Создай {post_type} пост на основе следующего текста: {text}
     """

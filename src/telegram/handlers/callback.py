@@ -127,7 +127,9 @@ async def generate_reels(
     message_text = f"{base_prompt} основе следующего текста: {text}"
     msg_to_delete = await call.message.answer("Генерирую ответ...")
     response = await generate_response(
-        uow, call, prompts.prompt_text(message_text, text), post_generator
+        uow,
+        call,
+        prompts.prompt_text(message_text, text),
     )
     await state.update_data({"response": response})
     await call.message.answer(
@@ -146,13 +148,15 @@ async def generate_reels(
         SendResponse.telegram,
     ),
 )
-async def generate_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def generate_post(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
+):
     response = await state.get_data()
     main_state = await state.get_state()
     post_type = main_state.split(":")[1]
     text = response.get("data")
     response = await generate_response(
-        uow, call, prompts.prompt_text(post_type, text), post_generator
+        uow, call, prompts.prompt_text(post_type, text), assistant
     )
     await state.update_data({"response": response})
     await call.message.answer(
