@@ -88,16 +88,18 @@ async def main_goal(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 
 @router.message(F.text, GenerateSemantic.confirmed_main_goal)
-async def confirmed_main_goal(message: Message, uow: UnitOfWork, state: FSMContext):
+async def confirmed_main_goal(
+    message: Message, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
+):
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        thread = await assistant.get_thread(user.thread_id)
         alcove_text = await state.get_data()
-        await semantic_layout_generator.create_message(
+        await assistant.create_message(
             prompts.alcove_prompt(alcove_text.get("alcove"), message.text),
             user.thread_id,
         )
-        response = await semantic_layout_generator.run_assistant(thread)
+        response = await assistant.run_assistant(thread)
         await state.update_data({"main_goal": response})
 
     await message.answer(
@@ -154,7 +156,11 @@ async def content_text(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 @router.message(GenerateSemantic.confirmed_format)
 async def generate_brief(
-    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot
+    message: Message,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
 ):
     msg_to_delete = await message.answer("Генерирую ответ...")
     state_data = await state.get_data()
@@ -164,14 +170,14 @@ async def generate_brief(
     content = message.text
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
-        await semantic_layout_generator.create_message(
+        thread = await assistant.get_thread(user.thread_id)
+        await assistant.create_message(
             prompts.short_brief_prompt(
                 main_goal, confirmed_semantic, confirmed_format, content
             ),
             user.thread_id,
         )
-        response = await semantic_layout_generator.run_assistant(thread)
+        response = await assistant.run_assistant(thread)
         await state.update_data({"short_brief": response})
 
     await message.answer(
@@ -196,7 +202,13 @@ async def regenerate_brief(call: CallbackQuery, uow: UnitOfWork, state: FSMConte
 
 
 @router.message(GenerateSemantic.regenerate_brief)
-async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot,assistant:AssistantOpenAI):
+async def changed_brief(
+    message: Message,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
+):
     msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
@@ -226,17 +238,21 @@ async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext, bo
 
 @router.callback_query(F.data == "all_right")
 async def generate_semantic_lines(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+    call: CallbackQuery,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
 ):
     msg_to_delete = await call.message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
-        await semantic_layout_generator.create_message(
+        thread = await assistant.get_thread(user.thread_id)
+        await assistant.create_message(
             prompts.three_semantic_line_prompt,
             user.thread_id,
         )
-        response = await semantic_layout_generator.run_assistant(thread)
+        response = await assistant.run_assistant(thread)
         await state.update_data({"three_semantic_line_prompt": response})
 
     await call.message.answer(
@@ -264,14 +280,18 @@ async def regenerate_semantic_lines(
 
 @router.message(GenerateSemantic.regenerate_semantic_lines)
 async def changed_semantic_lines(
-    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot,assistant:AssistantOpenAI
+    message: Message,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
 ):
     msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
         thread = await assistant.get_thread(user.thread_id)
         change_semantic_lines = await state.get_data()
-        await .create_message(
+        await assistant.create_message(
             prompts.regenerate_response_prompt_with_comments(
                 message.text, change_semantic_lines.get("three_semantic_line_prompt")
             ),
@@ -295,7 +315,11 @@ async def changed_semantic_lines(
 
 @router.callback_query(F.data == "go_forward")
 async def generate_layout(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot, assistant:AssistantOpenAI
+    call: CallbackQuery,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
 ):
     msg_to_delete = await call.message.answer("Генерирую ответ...")
 
