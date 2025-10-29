@@ -6,13 +6,14 @@ from aiogram import Router, Bot, F
 from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src.client_openai import AssistantOpenAI
 from src.config import settings
 from src.database.uow import UnitOfWork
 from src.telegram.states import GenerateSemantic
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
-from src.telegram.utils import escape_markdown_v2, generate_semantic_layout_generator
+from src.telegram.utils import escape_markdown_v2, generate_response
 from src.telegram.states import Chat
 from src.telegram import prompts
 
@@ -195,19 +196,19 @@ async def regenerate_brief(call: CallbackQuery, uow: UnitOfWork, state: FSMConte
 
 
 @router.message(GenerateSemantic.regenerate_brief)
-async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot):
+async def changed_brief(message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot,assistant:AssistantOpenAI):
     msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        thread = await assistant.get_thread(user.thread_id)
         change_brief = await state.get_data()
-        await semantic_layout_generator.create_message(
+        await assistant.create_message(
             prompts.regenerate_response_prompt_with_comments(
                 message.text, change_brief.get("short_brief")
             ),
             user.thread_id,
         )
-        response = await semantic_layout_generator.run_assistant(thread)
+        response = await assistant.run_assistant(thread)
         await state.update_data({"short_brief": response})
 
     await message.answer(
@@ -263,20 +264,20 @@ async def regenerate_semantic_lines(
 
 @router.message(GenerateSemantic.regenerate_semantic_lines)
 async def changed_semantic_lines(
-    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot
+    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot,assistant:AssistantOpenAI
 ):
     msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
-        thread = await semantic_layout_generator.get_thread(user.thread_id)
+        thread = await assistant.get_thread(user.thread_id)
         change_semantic_lines = await state.get_data()
-        await semantic_layout_generator.create_message(
+        await .create_message(
             prompts.regenerate_response_prompt_with_comments(
                 message.text, change_semantic_lines.get("three_semantic_line_prompt")
             ),
             user.thread_id,
         )
-        response = await semantic_layout_generator.run_assistant(thread)
+        response = await assistant.run_assistant(thread)
         await state.update_data({"three_semantic_line_prompt": response})
 
     await message.answer(
@@ -294,15 +295,15 @@ async def changed_semantic_lines(
 
 @router.callback_query(F.data == "go_forward")
 async def generate_layout(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot, assistant:AssistantOpenAI
 ):
     msg_to_delete = await call.message.answer("Генерирую ответ...")
 
-    response = await generate_semantic_layout_generator(
+    response = await generate_response(
         uow,
         call,
         prompts.layout_prompt,
-        semantic_layout_generator,
+        assistant,
     )
     await state.update_data({"layout_prompt": response})
 
@@ -319,15 +320,19 @@ async def generate_layout(
 
 @router.callback_query(F.data == "regenerate_grid")
 async def regenerate_layout(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+    call: CallbackQuery,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
 ):
     msg_to_delete = await call.message.answer("Пересобираю раскладку...")
     layout = await state.get_data()
-    response = await generate_semantic_layout_generator(
+    response = await generate_response(
         uow,
         call,
         prompts.regenerate_response_prompt(layout.get("layout_prompt")),
-        semantic_layout_generator,
+        assistant,
     )
     await state.update_data({"layout_prompt": response})
     await bot.delete_message(
