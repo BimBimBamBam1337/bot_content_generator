@@ -18,7 +18,11 @@ class SendResponse(StatesGroup):
     article = State()
 
 
-class ConfirmResponse(SendResponse): ...
+class ConfirmResponse(SendResponse):
+    telegram = State()
+    instagram = State()
+    threads = State()
+    article = State()
 
 
 class GenerateSemantic(StatesGroup):
