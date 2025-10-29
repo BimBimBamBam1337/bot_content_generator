@@ -17,7 +17,7 @@ from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.prompts import type_prompts
 from src.telegram.utils import escape_markdown_v2, generate_response
 from src.constants import *
-from telegram import prompts
+from src.telegram import prompts
 
 router = Router()
 
