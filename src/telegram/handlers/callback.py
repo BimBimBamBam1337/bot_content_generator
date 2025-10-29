@@ -160,6 +160,7 @@ async def generate_post(
     main_state = await state.get_state()
     post_type = main_state.split(":")[1]
     text = response.get("data")
+    print(post_type)
     response = await generate_response(
         uow, call, prompts.prompt_text(post_type, text), assistant
     )
