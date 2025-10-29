@@ -53,9 +53,10 @@ async def back_to_menu(
 ):
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
-        await assistant.delete_thread(user.thread_id)
-        thread_id = await assistant.create_thread()
-        await uow.user_repo.update_user(call.from_user.id, thread_id=thread_id)
+        if user.thread_id:
+            await assistant.delete_thread(user.thread_id)
+            thread_id = await assistant.create_thread()
+            await uow.user_repo.update_user(call.from_user.id, thread_id=thread_id)
     await call.message.answer(
         text=texts.generate_command_text,
         reply_markup=create_vertical_keyboard(keyboards_text.assemble_posts_buttons),
@@ -63,11 +64,22 @@ async def back_to_menu(
 
 
 @router.callback_query(F.data == "assemble_posts", PromoCodeExpiredFilter())
-async def assemble_posts(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def assemble_posts(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
+):
     async with uow:
-        await uow.user_repo.update_user(
-            call.from_user.id, assistant_id=settings.post_generator
-        )
+        user = await uow.user_repo.get(call.from_user.id)
+        if user.thread_id:
+            await uow.user_repo.update_user(
+                call.from_user.id, assistant_id=settings.post_generator
+            )
+        else:
+            thread_id = await assistant.create_thread()
+            await uow.user_repo.update_user(
+                call.from_user.id,
+                thread_id=thread_id,
+                assistant_id=settings.post_generator,
+            )
     await call.message.answer(
         text=texts.send_text_or_voice_text,
     )

@@ -19,9 +19,8 @@ async def start(message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext):
     async with uow:
         user_exist = await uow.user_repo.get(message.from_user.id)  # type:ignore
         if user_exist is None:
-            user_thread = await post_generator.create_thread()
-            user = await uow.user_repo.create(message.from_user.id, user_thread.id)  # type: ignore
-            logger.info(f"Registrate user {user.id}")
+            user = await uow.user_repo.create(message.from_user.id)  # type: ignore
+            logger.info("Registrate user {}", user.id)
 
     await message.answer(
         text=texts.start_text,
