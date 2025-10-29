@@ -8,6 +8,7 @@ from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import StateFilter
 
+from src.config import settings
 from src.database.uow import UnitOfWork
 from src.telegram.states import Promo, Chat, SendResponse
 from src.telegram import texts
@@ -60,12 +61,21 @@ async def send_message_to_openai(
 ):
     msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
-        # user = await uow.user_repo.get(message.from_user.id)
-        # thread = await post_generator.get_thread(user.thread_id)
-        # await post_generator.create_message(message.text, user.thread_id)
-        # response = await post_generator.run_assistant(thread)
-        response = await generate_response(uow, message, message.text, assistant)
-        await state.update_data({"data": response})
+        user = await uow.user_repo.get(message.from_user.id)
+        if not user.thread_id:
+            thread_id = await assistant.create_thread()
+            await uow.user_repo.update_user(
+                message.from_user.id,
+                thread_id=thread_id,
+                assistant_id=settings.post_generator,
+            )
+
+            thread = await assistant.get_thread(user.thread_id)
+            await assistant.create_message(message.text, user.thread_id)
+            response = await assistant.run_assistant(thread)
+        else:
+            response = await generate_response(uow, message, message.text, assistant)
+            await state.update_data({"data": response})
 
         await message.answer(
             text=escape_markdown_v2(response),

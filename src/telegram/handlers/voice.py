@@ -37,7 +37,15 @@ async def send_voice_text_to_openai(
 
     transcription = await whisper.get_transcription(str(local_path))
     os.remove(local_path)
-
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        if not user.thread_id:
+            thread_id = await assistant.create_thread()
+            await uow.user_repo.update_user(
+                message.from_user.id,
+                thread_id=thread_id,
+                assistant_id=settings.post_generator,
+            )
     if not transcription:
         await message.answer("Не удалось распознать голос 😔")
     else:

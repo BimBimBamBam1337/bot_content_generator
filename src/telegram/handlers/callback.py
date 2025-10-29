@@ -68,16 +68,9 @@ async def assemble_posts(
 ):
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
-        if user.thread_id:
+        if user:
             await uow.user_repo.update_user(
                 call.from_user.id, assistant_id=settings.post_generator
-            )
-        else:
-            thread_id = await assistant.create_thread()
-            await uow.user_repo.update_user(
-                call.from_user.id,
-                thread_id=thread_id,
-                assistant_id=settings.post_generator,
             )
     await call.message.answer(
         text=texts.send_text_or_voice_text,
