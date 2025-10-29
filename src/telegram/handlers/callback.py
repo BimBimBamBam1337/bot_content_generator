@@ -117,7 +117,11 @@ async def threads(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 @router.callback_query(SendResponse.reels)
 async def generate_reels(
-    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
+    call: CallbackQuery,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
 ):
     response = await state.get_data()
     state_data = response.get("call_data")
@@ -130,6 +134,7 @@ async def generate_reels(
         uow,
         call,
         prompts.prompt_text(message_text, text),
+        assistant,
     )
     await state.update_data({"response": response})
     await call.message.answer(
@@ -168,12 +173,6 @@ async def generate_post(
 
 @router.callback_query(
     F.data == "confirm",
-    StateFilter(
-        SendResponse.reels,
-        SendResponse.threads,
-        SendResponse.instagram,
-        SendResponse.telegram,
-    ),
 )
 async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     main_state = await state.get_state()
@@ -205,12 +204,6 @@ async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 @router.callback_query(
     F.data == "change",
-    StateFilter(
-        SendResponse.reels,
-        SendResponse.threads,
-        SendResponse.instagram,
-        SendResponse.telegram,
-    ),
 )
 async def change_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     main_state = await state.get_state()
