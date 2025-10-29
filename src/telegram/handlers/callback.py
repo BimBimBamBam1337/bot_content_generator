@@ -85,34 +85,36 @@ async def reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await state.set_state(SendResponse.prepare_reels)
 
 
-@router.callback_query(F.data == "telegram")
-async def telegram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    state_data = await state.get_data()
-    await call.message.answer(
-        text=texts.type_post(state_data.get("data"), call.data),
-        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
-    )
-    await state.set_state(SendResponse.telegram)
-
-
-@router.callback_query(F.data == "instagram")
-async def instagram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    state_data = await state.get_data()
-    await call.message.answer(
-        text=texts.type_post(state_data.get("data"), call.data),
-        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
-    )
-    await state.set_state(SendResponse.instagram)
-
-
-@router.callback_query(F.data == "threads")
-async def threads(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    state_data = await state.get_data()
-    await call.message.answer(
-        text=texts.type_post(state_data.get("data"), call.data),
-        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
-    )
-    await state.set_state(SendResponse.threads)
+#
+#
+# @router.callback_query(F.data == "telegram")
+# async def telegram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+#     state_data = await state.get_data()
+#     await call.message.answer(
+#         text=texts.type_post(state_data.get("data"), call.data),
+#         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
+#     )
+#     await state.set_state(SendResponse.telegram)
+#
+#
+# @router.callback_query(F.data == "instagram")
+# async def instagram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+#     state_data = await state.get_data()
+#     await call.message.answer(
+#         text=texts.type_post(state_data.get("data"), call.data),
+#         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
+#     )
+#     await state.set_state(SendResponse.instagram)
+#
+#
+# @router.callback_query(F.data == "threads")
+# async def threads(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+#     state_data = await state.get_data()
+#     await call.message.answer(
+#         text=texts.type_post(state_data.get("data"), call.data),
+#         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
+#     )
+#     await state.set_state(SendResponse.threads)
 
 
 @router.callback_query(SendResponse.reels)
@@ -145,42 +147,32 @@ async def generate_reels(
     )
 
 
-@router.callback_query(
-    StateFilter(
-        SendResponse.reels,
-        SendResponse.threads,
-        SendResponse.instagram,
-        SendResponse.telegram,
-    ),
-)
+@router.callback_query(F.data.in_(["reels", "instagram", "telegram", "threads"]))
 async def generate_post(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
 ):
     response = await state.get_data()
-    main_state = await state.get_state()
-    post_type = main_state.split(":")[1]
     text = response.get("data")
     response = await generate_response(
-        uow, call, prompts.prompt_text(post_type, text), assistant
+        uow, call, prompts.prompt_text(call.data, text), assistant
     )
     await state.update_data({"response": response})
     await call.message.answer(
         text=escape_markdown_v2(
-            texts.type_post(escape_markdown_v2(response), post_type)
+            texts.type_post(escape_markdown_v2(response), call.data)
         ),
         parse_mode="MarkdownV2",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
 
-    if post_type == "reels":
+    if call.data == "reels":
         await state.set_state(ConfirmResponse.reels)
-    if post_type == "telegram":
+    if call.data == "telegram":
         await state.set_state(ConfirmResponse.telegram)
-    if post_type == "instagram":
+    if call.data == "instagram":
         await state.set_state(ConfirmResponse.instagram)
-    if post_type == "threads":
+    if call.data == "threads":
         await state.set_state(ConfirmResponse.threads)
-    print(await state.get_state())
 
 
 @router.callback_query(
