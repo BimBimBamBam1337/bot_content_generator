@@ -158,9 +158,7 @@ async def generate_post(
     )
     await state.update_data({"response": response})
     await call.message.answer(
-        text=escape_markdown_v2(
-            texts.type_post(escape_markdown_v2(response), call.data)
-        ),
+        text=escape_markdown_v2(texts.type_post(response, call.data)),
         parse_mode="MarkdownV2",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
