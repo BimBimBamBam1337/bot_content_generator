@@ -10,7 +10,7 @@ from aiogram.filters import StateFilter
 
 from src.config import settings
 from src.database.uow import UnitOfWork
-from src.telegram.states import Promo, Chat, SendResponse
+from src.telegram.states import Promo, Chat, ConfirmResponse
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
@@ -91,11 +91,10 @@ async def send_message_to_openai(
 @router.message(
     F.text,
     StateFilter(
-        SendResponse.article,
-        SendResponse.reels,
-        SendResponse.threads,
-        SendResponse.instagram,
-        SendResponse.telegram,
+        ConfirmResponse.reels,
+        ConfirmResponse.threads,
+        ConfirmResponse.instagram,
+        ConfirmResponse.telegram,
     ),
 )
 async def change_post(
