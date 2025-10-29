@@ -188,25 +188,21 @@ async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
         await call.message.answer(
             text=texts.confirmed_post_text,
             reply_markup=create_vertical_keyboard(keyboards_text.reels_buttons),
-            parse_mode="MarkdownV2",
         )
     if main_state.split(":")[1] == "telegram":
         await call.message.answer(
             text=texts.confirmed_post_text,
             reply_markup=create_vertical_keyboard(keyboards_text.telegram_buttons),
-            parse_mode="MarkdownV2",
         )
     if main_state.split(":")[1] == "instagram":
         await call.message.answer(
             text=texts.confirmed_post_text,
             reply_markup=create_vertical_keyboard(keyboards_text.instagram_buttons),
-            parse_mode="MarkdownV2",
         )
     if main_state.split(":")[1] == "threads":
         await call.message.answer(
             text=texts.confirmed_post_text,
             reply_markup=create_vertical_keyboard(keyboards_text.thread_buttons),
-            parse_mode="MarkdownV2",
         )
 
 
