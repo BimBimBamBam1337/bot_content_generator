@@ -63,15 +63,14 @@ async def send_message_to_openai(
     async with uow:
         user = await uow.user_repo.get(message.from_user.id)
         if not user.thread_id:
-            thread_id = await assistant.create_thread()
+            thread = await assistant.create_thread()
             await uow.user_repo.update_user(
                 message.from_user.id,
-                thread_id=thread_id,
+                thread_id=thread.id,
                 assistant_id=settings.post_generator,
             )
 
-            thread = await assistant.get_thread(user.thread_id)
-            await assistant.create_message(message.text, user.thread_id)
+            await assistant.create_message(message.text, thread.id)
             response = await assistant.run_assistant(thread)
         else:
             response = await generate_response(uow, message, message.text, assistant)
