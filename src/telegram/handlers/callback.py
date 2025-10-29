@@ -8,7 +8,6 @@ from aiogram.fsm.context import FSMContext
 
 from src.client_openai import AssistantOpenAI
 from src.config import settings
-from src.client_openai import post_generator
 from src.database.uow import UnitOfWork
 from src.telegram.filters import PromoCodeExpiredFilter
 from src.telegram.states import Chat, Promo, SendResponse

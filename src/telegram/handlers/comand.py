@@ -4,7 +4,6 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
-from src.client_openai import post_generator
 from src.database.uow import UnitOfWork
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard

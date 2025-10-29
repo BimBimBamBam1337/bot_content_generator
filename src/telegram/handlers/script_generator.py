@@ -12,7 +12,6 @@ from src.telegram.states import GenerateSemantic
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
-from src.client_openai import semantic_layout_generator
 from src.telegram.utils import escape_markdown_v2, generate_semantic_layout_generator
 from src.telegram.states import Chat
 from src.telegram import prompts
