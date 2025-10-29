@@ -18,7 +18,7 @@ class SendResponse(StatesGroup):
     article = State()
 
 
-class ConfirResponse(SendResponse): ...
+class ConfirmResponse(SendResponse): ...
 
 
 class GenerateSemantic(StatesGroup):

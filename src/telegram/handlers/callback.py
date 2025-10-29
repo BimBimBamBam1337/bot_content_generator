@@ -10,7 +10,7 @@ from src.client_openai import AssistantOpenAI
 from src.config import settings
 from src.database.uow import UnitOfWork
 from src.telegram.filters import PromoCodeExpiredFilter
-from src.telegram.states import Chat, Promo, SendResponse, ConfirResponse
+from src.telegram.states import Chat, Promo, SendResponse, ConfirmResponse
 from src.telegram import texts
 from src.telegram.keyboards.inline import keyboards_text
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
@@ -170,22 +170,23 @@ async def generate_post(
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
     if post_type == "reels":
-        await state.set_state(ConfirResponse.reels)
+        await state.set_state(ConfirmResponse.reels)
     if post_type == "telegram":
-        await state.set_state(ConfirResponse.telegram)
+        await state.set_state(ConfirmResponse.telegram)
     if post_type == "instagram":
-        await state.set_state(ConfirResponse.instagram)
+        await state.set_state(ConfirmResponse.instagram)
     if post_type == "threads":
-        await state.set_state(ConfirResponse.threads)
+        await state.set_state(ConfirmResponse.threads)
+    print(await state.get_state())
 
 
 @router.callback_query(
     F.data == "confirm",
     StateFilter(
-        ConfirResponse.reels,
-        ConfirResponse.threads,
-        ConfirResponse.instagram,
-        ConfirResponse.telegram,
+        ConfirmResponse.reels,
+        ConfirmResponse.threads,
+        ConfirmResponse.instagram,
+        ConfirmResponse.telegram,
     ),
 )
 async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
@@ -219,10 +220,10 @@ async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 @router.callback_query(
     F.data == "change",
     StateFilter(
-        ConfirResponse.reels,
-        ConfirResponse.threads,
-        ConfirResponse.instagram,
-        ConfirResponse.telegram,
+        ConfirmResponse.reels,
+        ConfirmResponse.threads,
+        ConfirmResponse.instagram,
+        ConfirmResponse.telegram,
     ),
 )
 async def change_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
