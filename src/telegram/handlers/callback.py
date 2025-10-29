@@ -10,7 +10,7 @@ from src.client_openai import AssistantOpenAI
 from src.config import settings
 from src.database.uow import UnitOfWork
 from src.telegram.filters import PromoCodeExpiredFilter
-from src.telegram.states import Chat, Promo, SendResponse
+from src.telegram.states import Chat, Promo, SendResponse, ConfirResponse
 from src.telegram import texts
 from src.telegram.keyboards.inline import keyboards_text
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
@@ -160,7 +160,6 @@ async def generate_post(
     main_state = await state.get_state()
     post_type = main_state.split(":")[1]
     text = response.get("data")
-    print(post_type)
     response = await generate_response(
         uow, call, prompts.prompt_text(post_type, text), assistant
     )
@@ -170,10 +169,24 @@ async def generate_post(
         parse_mode="MarkdownV2",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
+    if post_type == "reels":
+        await state.set_state(ConfirResponse.reels)
+    if post_type == "telegram":
+        await state.set_state(ConfirResponse.telegram)
+    if post_type == "instagram":
+        await state.set_state(ConfirResponse.instagram)
+    if post_type == "threads":
+        await state.set_state(ConfirResponse.threads)
 
 
 @router.callback_query(
     F.data == "confirm",
+    StateFilter(
+        ConfirResponse.reels,
+        ConfirResponse.threads,
+        ConfirResponse.instagram,
+        ConfirResponse.telegram,
+    ),
 )
 async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     main_state = await state.get_state()
@@ -205,6 +218,12 @@ async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 
 @router.callback_query(
     F.data == "change",
+    StateFilter(
+        ConfirResponse.reels,
+        ConfirResponse.threads,
+        ConfirResponse.instagram,
+        ConfirResponse.telegram,
+    ),
 )
 async def change_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     main_state = await state.get_state()

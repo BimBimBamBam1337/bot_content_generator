@@ -18,6 +18,9 @@ class SendResponse(StatesGroup):
     article = State()
 
 
+class ConfirResponse(SendResponse): ...
+
+
 class GenerateSemantic(StatesGroup):
     forward_1 = State()
     forward_2 = State()
