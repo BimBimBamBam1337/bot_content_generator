@@ -76,3 +76,9 @@ def regenerate_response_prompt(topic: str) -> str:
 Сделай текст лаконичным, современным и логичным.  
 Выводи ровно 12 пунктов подряд, без деления на линии или циклы, без каких-либо пояснений.
 """
+
+
+def prompt_text(post_type: str, text: str | None) -> str:
+    return f"""
+Создай {post_type} на основе следующего текста: {text}
+    """

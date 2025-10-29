@@ -6,15 +6,17 @@ from loguru import logger
 from aiogram import Router, Bot, F
 from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
+from aiogram.filters import StateFilter
 
 from src.database.uow import UnitOfWork
-from src.telegram.states import Promo, Chat
+from src.telegram.states import Promo, Chat, SendResponse
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
-from src.client_openai import post_generator, whisper
-from src.telegram.utils import escape_markdown_v2
+from src.client_openai import AssistantOpenAI
+from src.telegram.utils import escape_markdown_v2, generate_response
 from src.constants import *
+from telegram import prompts
 
 
 router = Router()
@@ -50,14 +52,19 @@ async def check_code(message: Message, uow: UnitOfWork, state: FSMContext):
 
 @router.message(F.text, Chat.send_message)
 async def send_message_to_openai(
-    message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot
+    message: Message,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
 ):
     msg_to_delete = await message.answer("Генерирую ответ...")
     async with uow:
-        user = await uow.user_repo.get(message.from_user.id)
-        thread = await post_generator.get_thread(user.thread_id)
-        await post_generator.create_message(message.text, user.thread_id)
-        response = await post_generator.run_assistant(thread)
+        # user = await uow.user_repo.get(message.from_user.id)
+        # thread = await post_generator.get_thread(user.thread_id)
+        # await post_generator.create_message(message.text, user.thread_id)
+        # response = await post_generator.run_assistant(thread)
+        response = await generate_response(uow, message, message.text, assistant)
         await state.update_data({"data": response})
 
         await message.answer(
@@ -65,6 +72,44 @@ async def send_message_to_openai(
             reply_markup=create_vertical_keyboard(
                 keyboards_text.chose_transcription_buttons
             ),
+            parse_mode="MarkdownV2",
+        )
+    await bot.delete_message(
+        chat_id=message.chat.id, message_id=msg_to_delete.message_id
+    )
+
+
+@router.message(
+    F.text,
+    StateFilter(
+        SendResponse.article,
+        SendResponse.reels,
+        SendResponse.threads,
+        SendResponse.instagram,
+        SendResponse.telegram,
+    ),
+)
+async def change_post(message: Message, uow: UnitOfWork, state: FSMContext, bot: Bot):
+    response = await state.get_data()
+    text = response.get("data")
+    msg_to_delete = await message.answer("Генерирую ответ...")
+
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        thread = await post_generator.get_thread(user.thread_id)
+        await post_generator.create_message(
+            prompts.regenerate_response_prompt_with_comments(
+                text,
+                message.text,
+            ),
+            user.thread_id,
+        )
+        response = await post_generator.run_assistant(thread)
+        await state.update_data({"data": response})
+
+        await message.answer(
+            text=escape_markdown_v2(response),
+            reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
             parse_mode="MarkdownV2",
         )
     await bot.delete_message(

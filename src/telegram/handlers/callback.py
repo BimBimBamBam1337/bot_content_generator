@@ -5,7 +5,6 @@ from loguru import logger
 from aiogram import Router, Bot, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
-from langdetect import detect
 
 from src.client_openai import post_generator
 from src.database.uow import UnitOfWork
@@ -14,9 +13,10 @@ from src.telegram.states import Chat, Promo, SendResponse
 from src.telegram import texts
 from src.telegram.keyboards.inline import keyboards_text
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
-from src.telegram.prompts import language_map, type_prompts
-from src.telegram.utils import escape_markdown_v2
+from src.telegram.prompts import type_prompts
+from src.telegram.utils import escape_markdown_v2, generate_response
 from src.constants import *
+from telegram import prompts
 
 router = Router()
 
@@ -42,6 +42,15 @@ async def back_to_menu(call: CallbackQuery, uow: UnitOfWork):
     await call.message.answer(
         text=texts.start_text,
         reply_markup=create_vertical_keyboard(keyboards_text.subscription_menu_buttons),
+    )
+
+
+@router.callback_query(F.data in ["main_menu", "final_confirm"])
+async def back_to_menu(call: CallbackQuery, uow: UnitOfWork, clien:AssistantOpenAI):
+    clien= 
+    await call.message.answer(
+        text=texts.generate_command_text,
+        reply_markup=create_vertical_keyboard(keyboards_text.assemble_posts_buttons),
     )
 
 
@@ -95,30 +104,6 @@ async def threads(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await state.set_state(SendResponse.threads)
 
 
-@router.callback_query(F.data == "article")
-async def article(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    await call.message.answer(
-        text=texts.article_text,
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.chose_language_post_buttons
-        ),
-    )
-    await state.set_state(SendResponse.article)
-
-
-@router.callback_query(SendResponse.prepare_reels)
-async def prepare_reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    await state.update_data(call_data=call.data)
-
-    await call.message.answer(
-        text=texts.reels_language_text,
-        reply_markup=create_vertical_keyboard(
-            keyboards_text.chose_language_post_buttons
-        ),
-    )
-    await state.set_state(SendResponse.reels)
-
-
 @router.callback_query(SendResponse.reels)
 async def generate_reels(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, bot: Bot
@@ -126,20 +111,16 @@ async def generate_reels(
     response = await state.get_data()
     state_data = response.get("call_data")
     text = response.get("data")
-    chosen_language = call.data
 
     base_prompt = type_prompts.get(state_data, "Создай контент")
-    language_text = language_map.get(chosen_language, "на языке исходного текста")
-    message_text = f"{base_prompt} {language_text} на основе следующего текста: {text}"
+    message_text = f"{base_prompt} основе следующего текста: {text}"
     msg_to_delete = await call.message.answer("Генерирую ответ...")
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await post_generator.get_thread(user.thread_id)
-        await post_generator.create_message(message_text, user.thread_id)
-        response_text = await post_generator.run_assistant(thread)
-
+    response = await generate_response(
+        uow, call, prompts.prompt_text(message_text, text), post_generator
+    )
+    await state.update_data({"response": response})
     await call.message.answer(
-        text=escape_markdown_v2(response_text), parse_mode="MarkdownV2"
+        text=escape_markdown_v2(response), parse_mode="MarkdownV2"
     )
     await bot.delete_message(
         chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
@@ -148,38 +129,77 @@ async def generate_reels(
 
 @router.callback_query(
     StateFilter(
-        SendResponse.article,
         SendResponse.reels,
         SendResponse.threads,
         SendResponse.instagram,
         SendResponse.telegram,
     ),
 )
-async def chose_language_auto(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+async def generate_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     response = await state.get_data()
     main_state = await state.get_state()
     post_type = main_state.split(":")[1]
     text = response.get("data")
-
-    try:
-        detected_lang = detect(text)
-    except Exception:
-        detected_lang = "en"
-
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await post_generator.get_thread(user.thread_id)
-
-        if detected_lang == "ru":
-            message_text = f"Создай {post_type} на русском языке на основе следующего текста: {text}"
-        else:
-            message_text = (
-                f"Create a {post_type} in English based on the following text: {text}"
-            )
-
-        await post_generator.create_message(message_text, user.thread_id)
-        response_text = await post_generator.run_assistant(thread)
-
+    response = await generate_response(
+        uow, call, prompts.prompt_text(post_type, text), post_generator
+    )
+    await state.update_data({"response": response})
     await call.message.answer(
-        text=escape_markdown_v2(response_text), parse_mode="MarkdownV2"
+        text=escape_markdown_v2(texts.type_post(main_state.get("response"), post_type)),
+        parse_mode="MarkdownV2",
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
+    )
+
+
+@router.callback_query(
+    F.data == "confirm",
+    StateFilter(
+        SendResponse.reels,
+        SendResponse.threads,
+        SendResponse.instagram,
+        SendResponse.telegram,
+    ),
+)
+async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    main_state = await state.get_state()
+    if main_state.split(":")[1] == "reels":
+        await call.message.answer(
+            text=texts.confirmed_post_text,
+            reply_markup=create_vertical_keyboard(keyboards_text.reels_buttons),
+            parse_mode="MarkdownV2",
+        )
+    if main_state.split(":")[1] == "telegram":
+        await call.message.answer(
+            text=texts.confirmed_post_text,
+            reply_markup=create_vertical_keyboard(keyboards_text.telegram_buttons),
+            parse_mode="MarkdownV2",
+        )
+    if main_state.split(":")[1] == "instagram":
+        await call.message.answer(
+            text=texts.confirmed_post_text,
+            reply_markup=create_vertical_keyboard(keyboards_text.instagram_buttons),
+            parse_mode="MarkdownV2",
+        )
+    if main_state.split(":")[1] == "threads":
+        await call.message.answer(
+            text=texts.confirmed_post_text,
+            reply_markup=create_vertical_keyboard(keyboards_text.thread_buttons),
+            parse_mode="MarkdownV2",
+        )
+
+
+@router.callback_query(
+    F.data == "change",
+    StateFilter(
+        SendResponse.reels,
+        SendResponse.threads,
+        SendResponse.instagram,
+        SendResponse.telegram,
+    ),
+)
+async def change_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    main_state = await state.get_state()
+    await call.message.answer(
+        text=texts.what_to_change_text,
+        parse_mode="MarkdownV2",
     )

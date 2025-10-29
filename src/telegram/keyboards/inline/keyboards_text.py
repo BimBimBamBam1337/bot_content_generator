@@ -11,10 +11,7 @@ go_back_to_menu = {
     "1": ["Вернуться в главное меню", "back_to_menu"],
 }
 assemble_posts_buttons = {
-    "0": [
-        "1. Написать сценарий ...",
-        "assemble_posts",
-    ],
+    "0": ["1. Написать сценарий ...", "assemble_posts"],
     "1": ["2. Собрать смысловую расскладку...", "assemble_posts_for_layout"],
 }
 chose_language_buttons = {
@@ -33,7 +30,6 @@ chose_transcription_buttons = {
     "1": ["Пост Telegram", "telegram"],
     "2": ["Пост instagram", "instagram"],
     "3": ["Пост Threads", "threads"],
-    "4": ["Статья", "article"],
 }
 chose_script_buttos = {
     "0": ["История или инсайт", "story_or_insight"],
@@ -47,7 +43,10 @@ chose_language_post_buttons = {
 }
 
 generate_text_buttons = {"0": ["Сгенерировать текст", "generate_text"]}
-
+confirm_post_buttons = {
+    "0": ["Утвердить", "confirm"],
+    "1": ["Внести правки", "change"],
+}
 confirm_begin_brief_buttons = {
     "0": ["Все верно", "all_right"],
     "1": ["Исправить пункт", "change_brief"],
@@ -59,4 +58,32 @@ confirm_semantic_line_buttons = {
 confirm_layout_buttons = {
     "0": ["✅ Утвердить раскладку", "confirm_layout"],
     "1": ["🔄 Перегенерировать сетку", "regenerate_grid"],
+}
+
+instagram_buttons = {
+    "0": ["Пост в telegram", "telegram"],
+    "1": ["Пост в threads", "threads"],
+    "2": ["Сценарий reels", "reels"],
+    "3": ["Главное меню", "main_menu"],
+    "4": ["Утвердить", "final_confirm"],
+}
+telegram_buttons = {
+    "0": ["Пост в instagram", "instagram"],
+    "1": ["Пост в threads", "threads"],
+    "2": ["Сценарий reels", "reels"],
+    "3": ["Главное меню", "main_menu"],
+    "4": ["Утвердить", "final_confirm"],
+}
+reels_buttons = {
+    "0": ["Пост в telegram", "telegram"],
+    "1": ["Пост в threads", "threads"],
+    "2": ["Пост в instagram", "instagram"],
+    "3": ["Главное меню", "main_menu"],
+    "4": ["Утвердить", "final_confirm"],
+}
+thread_buttons = {
+    "0": ["Пост в telegram", "telegram"],
+    "1": ["Пост в threads", "threads"],
+    "3": ["Главное меню", "main_menu"],
+    "4": ["Утвердить", "final_confirm"],
 }

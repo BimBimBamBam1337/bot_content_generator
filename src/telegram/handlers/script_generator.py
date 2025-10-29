@@ -24,7 +24,9 @@ router = Router()
 
 @router.callback_query(F.data == "assemble_posts_for_layout")
 async def assemble_posts_for_layout(call: CallbackQuery, uow: UnitOfWork):
-
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
+        await
     await call.message.answer(
         text=texts.assemble_posts_for_layout_text,
         reply_markup=create_vertical_keyboard(keyboards_text.begin_breaf_buttons),
@@ -318,7 +320,9 @@ async def regenerate_layout(
         semantic_layout_generator,
     )
     await state.update_data({"layout_prompt": response})
-
+    await bot.delete_message(
+        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
+    )
     await call.message.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),

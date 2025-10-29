@@ -33,6 +33,10 @@ class AssistantOpenAI:
         )
         return thread_messages.data
 
+    async def delete_thread(self, thread_id: str) -> bool:
+        response = await self.client.beta.threads.delete(thread_id)
+        return response.get("deleted")
+
     async def run_assistant(self, thread: Thread) -> str:
         assistant = await self.client.beta.assistants.retrieve(
             assistant_id=self.assistant_id
