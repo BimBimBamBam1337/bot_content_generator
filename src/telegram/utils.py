@@ -5,13 +5,12 @@ from aiogram.types import CallbackQuery, TelegramObject
 from src.client_openai import AssistantOpenAI
 from src.database.uow import UnitOfWork
 
-def escape_markdown_v2(text: str) -> str:
-    # сначала экранируем только безопасные символы, кроме тех, что используются в форматировании
-    escaped = re.sub(r'([!()\[\]~>#+\-=|{}])', r'\\\1', text)
 
-    # экранируем точки, только если они не внутри URL
-    escaped = re.sub(r'(?<!https?):(?<!\w)\.', r'\\.', escaped)
-    return escaped
+def escape_markdown_v2(text: str) -> str:
+    # Спецсимволы MarkdownV2, которые ломают Telegram
+    # но ** и _ оставляем, чтобы жирный и курсив работали
+    # список безопасных для экранирования: ! . ( ) [ ] ~ > # + - = | { }
+    return re.sub(r"([!.\[\]()~>#+\-=|{}])", r"\\\1", text)
 
 
 async def generate_response(
