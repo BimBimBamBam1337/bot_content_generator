@@ -6,6 +6,8 @@ from aiogram import Router, Bot, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 
+from src.client_openai import AssistantOpenAI
+from src.config import settings
 from src.client_openai import post_generator
 from src.database.uow import UnitOfWork
 from src.telegram.filters import PromoCodeExpiredFilter
@@ -45,9 +47,15 @@ async def back_to_menu(call: CallbackQuery, uow: UnitOfWork):
     )
 
 
-@router.callback_query(F.data in ["main_menu", "final_confirm"])
-async def back_to_menu(call: CallbackQuery, uow: UnitOfWork, clien:AssistantOpenAI):
-    clien= 
+@router.callback_query(F.data.in_(["main_menu", "final_confirm"]))
+async def back_to_menu(
+    call: CallbackQuery, uow: UnitOfWork, assistant: AssistantOpenAI
+):
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
+        await assistant.delete_thread(user.thread_id)
+        thread_id = await assistant.create_thread()
+        await uow.user_repo.update_user(call.from_user.id, thread_id=thread_id)
     await call.message.answer(
         text=texts.generate_command_text,
         reply_markup=create_vertical_keyboard(keyboards_text.assemble_posts_buttons),
@@ -56,6 +64,10 @@ async def back_to_menu(call: CallbackQuery, uow: UnitOfWork, clien:AssistantOpen
 
 @router.callback_query(F.data == "assemble_posts", PromoCodeExpiredFilter())
 async def assemble_posts(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    async with uow:
+        await uow.user_repo.update_user(
+            call.from_user.id, assistant_id=settings.post_generator
+        )
     await call.message.answer(
         text=texts.send_text_or_voice_text,
     )
