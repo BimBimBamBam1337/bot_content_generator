@@ -11,7 +11,7 @@ from src.telegram.states import Promo, Chat
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
-from src.client_openai import post_generator, whisper
+from src.client_openai import whisper
 from src.telegram.utils import escape_markdown_v2
 from src.constants import *
 

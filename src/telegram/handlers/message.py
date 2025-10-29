@@ -16,7 +16,7 @@ from src.telegram.keyboards.inline import keyboards_text
 from src.client_openai import AssistantOpenAI
 from src.telegram.utils import escape_markdown_v2, generate_response
 from src.constants import *
-from telegram import prompts
+from src.telegram import prompts
 
 
 router = Router()
