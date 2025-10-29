@@ -7,14 +7,10 @@ from src.database.uow import UnitOfWork
 
 
 def escape_markdown_v2(text: str) -> str:
-    """
-    Экранирует спецсимволы MarkdownV2, кроме ** и _,
-    чтобы Telegram не кидал ошибку "can't parse entities".
-    """
-    # Символы, требующие экранирования по спецификации Telegram MarkdownV2
-    # https://core.telegram.org/bots/api#markdownv2-style
-    pattern = r'([_*\[\]()~`>#+\-=|{}.!])'
-    return re.sub(pattern, r'\\\1', text)
+    # Все спецсимволы MarkdownV2, включая точку
+    escape_chars = r"_*[]()~`>#+-=|{}.!\\"
+    return re.sub(f"([{re.escape(escape_chars)}])", r"\\\1", text)
+
 
 
 async def generate_response(
