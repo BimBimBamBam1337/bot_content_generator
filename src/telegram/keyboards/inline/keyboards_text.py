@@ -11,7 +11,7 @@ go_back_to_menu = {
     "1": ["Вернуться в главное меню", "back_to_start"],
 }
 assemble_posts_buttons = {
-    "0": ["1. Написать сценарий ...", "assemble_posts"],
+    "0": ["1. Написать сценарий или пост ...", "assemble_posts"],
     "1": ["2. Собрать смысловую расскладку...", "assemble_posts_for_layout"],
 }
 chose_language_buttons = {

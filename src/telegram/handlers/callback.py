@@ -123,7 +123,7 @@ async def generate_reels(
     )
 
 
-@router.callback_query(F.data.in_(["reels", "instagram", "telegram", "threads"]))
+@router.callback_query(F.data.in_(["instagram", "telegram", "threads"]))
 async def generate_post(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
 ):
