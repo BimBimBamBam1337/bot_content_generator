@@ -107,12 +107,12 @@ async def generate_reels(
         assistant,
     )
     await state.update_data({"response": response})
+    await state.set_state(ConfirmResponse.reels)
     await call.message.answer(
         text=escape_markdown_v2(response),
         parse_mode="MarkdownV2",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
-    await state.set_state(ConfirmResponse.reels)
     await bot.delete_message(
         chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
