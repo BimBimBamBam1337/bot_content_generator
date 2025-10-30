@@ -108,14 +108,17 @@ async def generate_reels(
     )
     await state.update_data({"response": response})
     await call.message.answer(
-        text=escape_markdown_v2(response), parse_mode="MarkdownV2"
+        text=escape_markdown_v2(response),
+        parse_mode="MarkdownV2",
+        reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
     await bot.delete_message(
         chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
+    await state.set_state(ConfirmResponse.reels)
 
 
-@router.callback_query(F.data.in_(["reels", "instagram", "telegram", "threads"]))
+@router.callback_query(F.data.in_(["instagram", "telegram", "threads"]))
 async def generate_post(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
 ):
@@ -130,9 +133,6 @@ async def generate_post(
         parse_mode="MarkdownV2",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
-
-    if call.data == "reels":
-        await state.set_state(ConfirmResponse.reels)
     if call.data == "telegram":
         await state.set_state(ConfirmResponse.telegram)
     if call.data == "instagram":
