@@ -73,7 +73,7 @@ async def send_message_to_openai(
             await assistant.create_message(message.text, thread.id)
             response = await assistant.run_assistant(thread)
         else:
-            response = await generate_response(uow, message, message.text, assistant)
+            response = await generate_response(user, message.text, assistant)
             await state.update_data({"data": response})
 
         await message.answer(

@@ -322,10 +322,10 @@ async def generate_layout(
     assistant: AssistantOpenAI,
 ):
     msg_to_delete = await call.message.answer("Генерирую ответ...")
-
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
     response = await generate_response(
-        uow,
-        call,
+        user,
         prompts.layout_prompt,
         assistant,
     )
@@ -352,9 +352,10 @@ async def regenerate_layout(
 ):
     msg_to_delete = await call.message.answer("Пересобираю раскладку...")
     layout = await state.get_data()
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
     response = await generate_response(
-        uow,
-        call,
+        user,
         prompts.regenerate_response_prompt(layout.get("layout_prompt")),
         assistant,
     )

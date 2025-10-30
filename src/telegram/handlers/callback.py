@@ -100,9 +100,10 @@ async def generate_reels(
     base_prompt = type_prompts.get(state_data, "Создай контент")
     message_text = f"{base_prompt} основе следующего текста: {text}"
     msg_to_delete = await call.message.answer("Генерирую ответ...")
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
     response = await generate_response(
-        uow,
-        call,
+        user,
         prompts.prompt_text(message_text, text),
         assistant,
     )
@@ -126,8 +127,10 @@ async def generate_post(
 ):
     response = await state.get_data()
     text = response.get("data")
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
     response = await generate_response(
-        uow, call, prompts.prompt_text(call.data, text), assistant
+        user, prompts.prompt_text(call.data, text), assistant
     )
 
     await state.update_data({"response": response})
