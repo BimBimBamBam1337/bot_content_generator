@@ -85,7 +85,10 @@ async def reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await state.set_state(SendResponse.reels)
 
 
-@router.callback_query(StateFilter(SendResponse.reels))
+@router.callback_query(
+    F.data.in_(["story_or_insight", "selling_reels", "trust_me"]),
+    StateFilter(SendResponse.reels),
+)
 async def generate_reels(
     call: CallbackQuery,
     uow: UnitOfWork,
