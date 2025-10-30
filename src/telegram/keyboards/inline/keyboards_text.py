@@ -8,7 +8,7 @@ how_much_buttons = {
 }
 go_back_to_menu = {
     "0": ["Оформить подписку", "subscribe"],
-    "1": ["Вернуться в главное меню", "back_to_menu"],
+    "1": ["Вернуться в главное меню", "back_to_start"],
 }
 assemble_posts_buttons = {
     "0": ["1. Написать сценарий ...", "assemble_posts"],

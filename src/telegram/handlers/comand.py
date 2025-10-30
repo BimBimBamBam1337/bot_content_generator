@@ -38,9 +38,24 @@ async def pay(message: Message):
 
 
 @router.message(Command("promo"))
-async def promo(message: Message):
+async def promo(message: Message, uow: UnitOfWork):
     """Команда для активации промо"""
+    async with uow:
+        user = await uow.user_repo.get(message.from_user.id)
+        promo = await uow.promo_code_repo.get(message.text)
 
+        if not promo:
+            await message.answer(
+                text=texts.not_right_promocode_text,
+                reply_markup=create_vertical_keyboard(keyboards_text.go_back_to_menu),
+            )
+            return
+
+        if message.text in user.used_promo_codes:
+            await message.answer("Ты уже использовал этот промокод")
+            return
+
+        await uow.user_repo.add_promo_code(user, message.text)
     await message.answer(
         text=texts.promo_text,
     )

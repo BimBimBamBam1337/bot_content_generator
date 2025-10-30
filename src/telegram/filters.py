@@ -1,13 +1,16 @@
 from aiogram import Bot
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
+from aiogram.fsm.context import FSMContext
 from datetime import datetime, timedelta, timezone
 
 from src.database.uow import UnitOfWork
 
 
 class PromoCodeExpiredFilter(BaseFilter):
-    async def __call__(self, message: Message, uow: UnitOfWork, bot: Bot) -> bool:
+    async def __call__(
+        self, message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext
+    ) -> bool:
         async with uow:
             user = await uow.user_repo.get(message.from_user.id)
 
@@ -24,6 +27,7 @@ class PromoCodeExpiredFilter(BaseFilter):
 
             if now - used_date > timedelta(days=code.access_days):
                 await message.answer("Промокод истёк, попробуй найти новый")
+                await state.clear()
                 return False
 
         return True

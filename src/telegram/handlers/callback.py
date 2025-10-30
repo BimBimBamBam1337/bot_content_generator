@@ -38,8 +38,8 @@ async def promo(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await state.set_state(Promo.got_code)
 
 
-@router.callback_query(F.data == "back_to_menu")
-async def back_to_menu(call: CallbackQuery, uow: UnitOfWork):
+@router.callback_query(F.data == "back_to_start")
+async def back_to_start(call: CallbackQuery, uow: UnitOfWork):
     await call.message.answer(
         text=texts.start_text,
         reply_markup=create_vertical_keyboard(keyboards_text.subscription_menu_buttons),
@@ -82,39 +82,7 @@ async def reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
         text=texts.reels_text,
         reply_markup=create_vertical_keyboard(keyboards_text.chose_script_buttos),
     )
-    await state.set_state(SendResponse.prepare_reels)
-
-
-#
-#
-# @router.callback_query(F.data == "telegram")
-# async def telegram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-#     state_data = await state.get_data()
-#     await call.message.answer(
-#         text=texts.type_post(state_data.get("data"), call.data),
-#         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
-#     )
-#     await state.set_state(SendResponse.telegram)
-#
-#
-# @router.callback_query(F.data == "instagram")
-# async def instagram(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-#     state_data = await state.get_data()
-#     await call.message.answer(
-#         text=texts.type_post(state_data.get("data"), call.data),
-#         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
-#     )
-#     await state.set_state(SendResponse.instagram)
-#
-#
-# @router.callback_query(F.data == "threads")
-# async def threads(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-#     state_data = await state.get_data()
-#     await call.message.answer(
-#         text=texts.type_post(state_data.get("data"), call.data),
-#         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
-#     )
-#     await state.set_state(SendResponse.threads)
+    await state.set_state(SendResponse.reels)
 
 
 @router.callback_query(SendResponse.reels)
