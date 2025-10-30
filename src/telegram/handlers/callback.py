@@ -112,10 +112,10 @@ async def generate_reels(
         parse_mode="MarkdownV2",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_post_buttons),
     )
+    await state.set_state(ConfirmResponse.reels)
     await bot.delete_message(
         chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
-    await state.set_state(ConfirmResponse.reels)
 
 
 @router.callback_query(F.data.in_(["instagram", "telegram", "threads"]))
