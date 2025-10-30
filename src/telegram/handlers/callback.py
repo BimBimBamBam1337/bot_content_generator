@@ -131,6 +131,8 @@ async def generate_post(
     text = response.get("data")
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
+    if call.data == "threads":
+        assistant = AssistantOpenAI(settings.openai_key, settings.threads_generator)
     response = await generate_response(
         user, prompts.prompt_text(call.data, text), assistant
     )

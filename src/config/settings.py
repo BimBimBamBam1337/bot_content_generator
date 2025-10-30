@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     openai_key: str
     post_generator: str
     semantic_layout_generator: str
+    threads_generator: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
