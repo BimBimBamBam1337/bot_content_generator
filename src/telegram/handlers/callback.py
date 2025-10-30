@@ -118,10 +118,9 @@ async def generate_reels(
     await bot.delete_message(
         chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
-    print(await state.get_state())
 
 
-@router.callback_query(F.data.in_(["instagram", "telegram", "threads"]))
+@router.callback_query(F.data.in_(["reels", "instagram", "telegram", "threads"]))
 async def generate_post(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
 ):
