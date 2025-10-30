@@ -83,7 +83,7 @@ reels_buttons = {
 }
 thread_buttons = {
     "0": ["Пост в telegram", "telegram"],
-    "1": ["Пост в threads", "threads"],
+    "1": ["Пост в instagram", "instagram"],
     "3": ["Главное меню", "main_menu"],
     "4": ["Утвердить", "final_confirm"],
 }
