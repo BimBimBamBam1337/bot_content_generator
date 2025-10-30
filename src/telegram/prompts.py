@@ -51,6 +51,18 @@ def regenerate_response_prompt_with_comments(text: str, response: str) -> str:
 """
 
 
+def regenerate_text(text: str, response: str) -> str:
+    return f"""
+{response}
+
+На основе комментариев ниже внеси необходимые правки только в соответствующие части текста, 
+сохранив форматирование, эмодзи, заголовки и структуру.
+
+Комментарии:
+{text}
+    """
+
+
 three_semantic_line_prompt = """
 Я сформируй три смысловые линии блога в формате с учётом предыдущих сообщений:
 

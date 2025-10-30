@@ -112,7 +112,7 @@ async def change_post(
         user = await uow.user_repo.get(message.from_user.id)
         thread = await assistant.get_thread(user.thread_id)
         await assistant.create_message(
-            prompts.regenerate_response_prompt_with_comments(
+            prompts.regenerate_text(
                 text,
                 message.text,
             ),
