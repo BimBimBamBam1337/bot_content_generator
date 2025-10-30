@@ -85,7 +85,7 @@ async def reels(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await state.set_state(SendResponse.reels)
 
 
-@router.callback_query(SendResponse.reels)
+@router.callback_query(StateFilter(SendResponse.reels))
 async def generate_reels(
     call: CallbackQuery,
     uow: UnitOfWork,
@@ -117,7 +117,6 @@ async def generate_reels(
         chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
     )
     print(await state.get_state())
-
 
 
 @router.callback_query(F.data.in_(["instagram", "telegram", "threads"]))
