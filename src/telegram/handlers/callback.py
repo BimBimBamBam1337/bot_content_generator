@@ -96,25 +96,19 @@ async def generate_reels(
     response = await state.get_data()
     state_data = response.get("call_data")
     text = response.get("data")
-
+    await state.set_state(ConfirmResponse.reels)
     base_prompt = type_prompts.get(state_data, "Создай контент")
     message_text = f"{base_prompt} основе следующего текста: {text}"
     msg_to_delete = await call.message.answer("Генерирую ответ...")
-    # response = await generate_response(
-    #     uow,
-    #     call,
-    #     prompts.prompt_text(message_text, text),
-    #     assistant,
-    # )
-    async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
-        thread = await assistant.get_thread(user.thread_id)
-        await assistant.create_message(
-            prompts.prompt_text(message_text, text), user.thread_id
-        )
-        response = await assistant.run_assistant(thread)
+    response = await generate_response(
+        uow,
+        call,
+        prompts.prompt_text(message_text, text),
+        assistant,
+    )
+
     await state.update_data({"response": response})
-    await state.set_state(ConfirmResponse.reels)
+
     await call.message.answer(
         text=escape_markdown_v2(response),
         parse_mode="MarkdownV2",
