@@ -1,5 +1,5 @@
 import asyncio
-
+import random
 from aiogram.filters import StateFilter
 from loguru import logger
 from aiogram import Router, Bot, F
@@ -25,8 +25,9 @@ router = Router()
 @router.callback_query(F.data.in_(["one_month:549", "one_year:5499"]))
 async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWork):
     price = int(call.data.split(":")[1])
-    url = create_payment_link(call.from_user.id, price)
-
+    inv_id = random.randint(1, 2147483647)
+    url = create_payment_link(inv_id, price)
+    await state.update_data({"inv_id": inv_id})
     await call.message.answer(
         text=f"Ссылка на оплату:\n{url}",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_payment_buttons),
@@ -35,5 +36,7 @@ async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWor
 
 @router.callback_query(F.data == "confirm_payment")
 async def check_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWork):
+    data = await state.get_data()
     print(call.from_user.id)
-    print(await check_status_payment(1107806304))
+
+    print(await check_status_payment(data.get("inv_id")))
