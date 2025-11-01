@@ -194,7 +194,6 @@ async def confirm_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     ),
 )
 async def change_post(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-    main_state = await state.get_state()
     await call.message.answer(
         text=texts.what_to_change_text,
         parse_mode="MarkdownV2",

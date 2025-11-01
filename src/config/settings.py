@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     redis_port: str
     openai_key: str
     post_generator: str
+    merchant_login: str
+    password1: str
+    password2: str
     semantic_layout_generator: str
     threads_generator: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

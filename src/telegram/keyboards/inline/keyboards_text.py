@@ -3,8 +3,8 @@ subscription_menu_buttons = {
     "1": ["Активировать промокод", "activate_promocode"],
 }
 how_much_buttons = {
-    "0": ["1 месяц — 549Р", "one_month"],
-    "1": ["1 год — 5499Р", "one_year"],
+    "0": ["1 месяц — 549Р", "one_month:549"],
+    "1": ["1 год — 5499Р", "one_year:5499"],
 }
 go_back_to_menu = {
     "0": ["Оформить подписку", "subscribe"],
@@ -59,7 +59,10 @@ confirm_layout_buttons = {
     "0": ["✅ Утвердить раскладку", "confirm_layout"],
     "1": ["🔄 Перегенерировать сетку", "regenerate_grid"],
 }
-
+confirm_payment_buttons = {
+    "0": ["Подтвердить оплату", "confirm_payment"],
+    "1": ["Отменить", "cancel"],
+}
 instagram_buttons = {
     "0": ["Пост в telegram", "telegram"],
     "1": ["Пост в threads", "threads"],

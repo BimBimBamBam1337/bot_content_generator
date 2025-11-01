@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
-from sqlalchemy import String, Integer, Boolean, DateTime, JSON
+from sqlalchemy import ForeignKey, String, Integer, Boolean, DateTime, JSON
 from sqlalchemy.ext.mutable import MutableDict
 
 Base = declarative_base()
@@ -36,3 +36,19 @@ class PromoCode(Base):
     access_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+    promo_code_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("promo_codes.id"), nullable=False
+    )
+
+    start_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    end_date: Mapped[datetime] = mapped_column(DateTime)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
