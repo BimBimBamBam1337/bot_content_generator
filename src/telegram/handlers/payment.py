@@ -25,13 +25,12 @@ router = Router()
 @router.callback_query(F.data.in_(["one_month:549", "one_year:5499"]))
 async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWork):
     price = int(call.data.split(":")[1])
-    inv_id = random.randint(1, 2147483647)
-    url = create_payment_link(inv_id, price)
-    await state.update_data({"inv_id": inv_id})
+    response = create_payment(call.from_user.id, price)
     await call.message.answer(
-        text=f"Ссылка на оплату:\n{url}",
+        text=f"Ссылка на оплату:\n{response.url}",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_payment_buttons),
     )
+    print(response.params)
 
 
 @router.callback_query(F.data == "confirm_payment")

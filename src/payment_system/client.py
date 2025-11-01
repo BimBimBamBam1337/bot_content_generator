@@ -1,5 +1,5 @@
 from robokassa import Robokassa
-from robokassa.types import InvoiceType
+from robokassa.types import InvoiceType, RobokassaResponse
 from src.config import settings
 
 payment = Robokassa(
@@ -10,9 +10,9 @@ payment = Robokassa(
 )
 
 
-def create_payment_link(user_id: int, price: int):
+def create_payment(user_id: int, price: int) -> RobokassaResponse:
     response = payment.generate_open_payment_link(out_sum=price, inv_id=user_id)
-    return response.url
+    return response
 
 
 async def check_status_payment(user_id: int):
