@@ -35,4 +35,4 @@ async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWor
 
 @router.callback_query(F.data == "confirm_payment")
 async def check_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWork):
-    print(await check_status_payment(call.from_user.id))
+    print(await check_status_payment(1107806304))

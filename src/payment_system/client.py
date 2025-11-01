@@ -15,5 +15,5 @@ def create_payment_link(user_id: int, price: int):
     return response.url
 
 
-def check_status_payment(user_id: int):
-    return payment.get_payment_details(inv_id=user_id)
+async def check_status_payment(user_id: int):
+    return await payment.get_payment_details(inv_id=user_id)
