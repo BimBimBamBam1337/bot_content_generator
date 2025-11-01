@@ -4,6 +4,7 @@ from .callback import router as callback_router
 from .message import router as message_router
 from .voice import router as voice_router
 from .script_generator import router as script_generator_router
+from .payment import router as payment_router
 
 routers = [
     comand_router,
@@ -11,4 +12,5 @@ routers = [
     message_router,
     voice_router,
     script_generator_router,
+    payment_router,
 ]
