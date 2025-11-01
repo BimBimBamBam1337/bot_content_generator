@@ -22,17 +22,13 @@ from src.telegram import prompts
 router = Router()
 
 
-@router.callback_query(F.data.spilit(":")[1].in_(["549", "5499"]))
+@router.callback_query(F.data.in_(["one_month:549", "one_year:5499"]))
 async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWork):
     price = int(call.data.split(":")[1])
-    if price == 549:
-        url = create_payment_link(call.from_user.id, price)
-
-        return
     url = create_payment_link(call.from_user.id, price)
+
     await call.message.answer(
-        text=f"""Ссылка на оплату: 
-{url}""",
+        text=f"Ссылка на оплату:\n{url}",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_payment_buttons),
     )
 
