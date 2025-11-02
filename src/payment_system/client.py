@@ -15,5 +15,5 @@ def create_payment(user_id: int, price: int) -> RobokassaResponse:
     return response
 
 
-async def check_status_payment(user_id: int):
-    return await payment.get_payment_details(inv_id=user_id)
+async def check_status_payment(signature: str):
+    return await payment.is_result_notification_valid(signature=signature)
