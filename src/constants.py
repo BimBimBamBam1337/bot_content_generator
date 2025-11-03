@@ -8,4 +8,4 @@ DATA_DIR = BASE_DIR / "data"
 
 LOGS_DIR = DATA_DIR / "logs"
 TMP_DIR = DATA_DIR / "tmp"
-
+PHOTOS_DIR = DATA_DIR / "photos"

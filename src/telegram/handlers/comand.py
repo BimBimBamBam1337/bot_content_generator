@@ -1,13 +1,15 @@
 from loguru import logger
 from aiogram import Router, Bot
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.media_group import MediaGroupBuilder
 
 from src.database.uow import UnitOfWork
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
+from src.constants import PHOTOS_DIR
 
 router = Router()
 
@@ -20,9 +22,13 @@ async def start(message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext):
         if user_exist is None:
             user = await uow.user_repo.create(message.from_user.id)  # type: ignore
             logger.info("Registrate user {}", user.id)
+    album_builder = MediaGroupBuilder(caption=texts.start_text)
 
-    await message.answer(
-        text=texts.start_text,
+    for photo_file in PHOTOS_DIR.glob("start_photo_*.jpg"):
+        album_builder.add(type="photo", media=FSInputFile(photo_file))
+
+    await message.answer_media_group(
+        media=album_builder.build(),
         reply_markup=create_vertical_keyboard(keyboards_text.subscription_menu_buttons),
     )
 
