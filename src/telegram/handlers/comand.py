@@ -24,11 +24,15 @@ async def start(message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext):
             logger.info("Registrate user {}", user.id)
     album_builder = MediaGroupBuilder(caption=texts.start_text)
 
-    for photo_file in PHOTOS_DIR.glob("start_photo_*.jpg"):
+    photo_files = sorted(PHOTOS_DIR.glob("start_photo_*.jpg"))
+    for photo_file in photo_files:
         album_builder.add(type="photo", media=FSInputFile(photo_file))
 
     await message.answer_media_group(
         media=album_builder.build(),
+    )
+    await message.answer(
+        "Выберите действие:",
         reply_markup=create_vertical_keyboard(keyboards_text.subscription_menu_buttons),
     )
 
