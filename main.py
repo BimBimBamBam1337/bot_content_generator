@@ -49,15 +49,15 @@ def create_app():
     return app
 
 
-def main():
+async def main():
     dm = DependanciesMiddleware()
+    await setup_bot_commands()
     dp.message.outer_middleware(dm)
     dp.callback_query.outer_middleware(dm)
     dp.include_routers(*routers)
-
-    app = create_app()
-    web.run_app(app, host=settings.site_host, port=settings.site_port)
+    await dp.start_polling(bot)
+    logger.info(f"Bot started as {await bot.get_me()}")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
