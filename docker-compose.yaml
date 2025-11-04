@@ -12,7 +12,6 @@ services:
       - SITE_PORT=${SITE_PORT}
     depends_on:
       - postgres
-      - tuna
     ports:
       - "4040:4040"
     volumes:
@@ -39,10 +38,6 @@ services:
       - network
     volumes:
       - redis:/data
-  tuna:
-    image: tuna/tuna-cli
-    command: http 4040
-    restart: always
   # сервис для запуска тестов
   tests:
     build: .
