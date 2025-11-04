@@ -55,6 +55,7 @@ async def main():
     dp.message.outer_middleware(dm)
     dp.callback_query.outer_middleware(dm)
     dp.include_routers(*routers)
+    await bot.delete_webhook(drop_pending_updates=False)
     await dp.start_polling(bot)
     logger.info(f"Bot started as {await bot.get_me()}")
 
