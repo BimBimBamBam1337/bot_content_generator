@@ -11,9 +11,9 @@ class Settings(BaseSettings):
     redis_port: str
     openai_key: str
     post_generator: str
-    # site_url: str
-    # site_host: str
-    # site_port: str
+    site_url: str
+    site_host: str
+    site_port: int
     merchant_login: str
     password1: str
     password2: str
@@ -21,15 +21,15 @@ class Settings(BaseSettings):
     threads_generator: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # @property
-    # def get_webhook_url(self) -> str:
-    #     """Динамически формирует путь для вебхука на основе токена и URL сайта."""
-    #     return f"{self.site_url}/{self.token}"
-    #
-    # @property
-    # def get_provider_hook_url(self) -> str:
-    #     """Динамически формирует путь для вебхука на основе токена и URL сайта."""
-    #     return f"{self.site_url}/robokassa"
+    @property
+    def get_webhook_url(self) -> str:
+        """Динамически формирует путь для вебхука на основе токена и URL сайта."""
+        return f"{self.site_url}/{self.token}"
+
+    @property
+    def get_provider_hook_url(self) -> str:
+        """Динамически формирует путь для вебхука на основе токена и URL сайта."""
+        return f"{self.site_url}/robokassa"
 
 
 settings = Settings()

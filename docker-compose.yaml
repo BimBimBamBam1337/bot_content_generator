@@ -2,12 +2,18 @@ services:
   # сам бот
   app:
     build: .
+    restart: always
     environment:
       - TOKEN=${TOKEN}
       - DATABASE_DSN=postgresql+asyncpg://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
       - REDIS_URL=redis://redis:${REDIS_PORT}
+      - SITE_URL=${SITE_URL}
+      - SITE_HOST=${SITE_HOST}
+      - SITE_PORT=${SITE_PORT}
     depends_on:
       - postgres
+    ports:
+      - "4040:4040"  # внеш:внутр — Telegram стучится сюда
     volumes:
       - .:/app
     networks:
