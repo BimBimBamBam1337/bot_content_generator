@@ -8,9 +8,12 @@ from aiogram.webhook.aiohttp_server import setup_application
 
 async def handle_webhook(request: web.Request):
     try:
-        update = Update(**await request.json())
-        await dp.feed_update(bot, update)
+        data = await request.json()
+        update = Update(**data)
+        await dp.feed_update(
+            bot, update
+        )  # в aiogram v3 feed_update существует у экземпляра Dispatcher
         return web.Response(status=200)
     except Exception as e:
-        logger.error(f"Ошибка при обработке вебхука: {e}")
+        logger.exception(f"Ошибка при обработке вебхука: {e}")
         return web.Response(status=500)
