@@ -12,8 +12,9 @@ services:
       - SITE_PORT=${SITE_PORT}
     depends_on:
       - postgres
+      - tuna
     ports:
-      - "4040:4040"  # внеш:внутр — Telegram стучится сюда
+      - "4040:4040"
     volumes:
       - .:/app
     networks:
@@ -38,7 +39,10 @@ services:
       - network
     volumes:
       - redis:/data
-
+  tuna:
+    image: tuna/tuna-cli
+    command: http 4040
+    restart: always
   # сервис для запуска тестов
   tests:
     build: .
@@ -54,7 +58,7 @@ services:
       - .:/app
     networks:
       - network 
-
+  
 networks:
   network:
     driver: bridge
