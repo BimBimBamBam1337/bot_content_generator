@@ -7,7 +7,7 @@ from loguru import logger
 from src.config import dp, bot, settings
 from src.telegram.midlewares import DependanciesMiddleware
 from src.telegram.handlers import routers
-from src.telegram.webhook import handle_webhook
+from src.telegram.webhook import handle_webhook, setup_robokassa_routes
 
 
 async def setup_bot_commands():
@@ -36,10 +36,12 @@ async def on_shutdown(app):
 
 def create_app():
     app = web.Application()
-    app.router.add_post(f"/{settings.token}", handle_webhook)
-    # app.router.add_post("/robokassa/result/", robokassa_result)
-    # app.router.add_get("/robokassa/fail/", robokassa_fail)
-    # app.router.add_get("/", home_page)
+
+    # Telegram webhook
+    app.router.add_post("/webhook", handle_webhook)
+
+    # Robokassa маршруты
+    setup_robokassa_routes(app)
 
     setup_application(app, dp, bot=bot)
     app.on_startup.append(on_startup)

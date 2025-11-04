@@ -23,13 +23,8 @@ class Settings(BaseSettings):
 
     @property
     def get_webhook_url(self) -> str:
-        """Динамически формирует путь для вебхука на основе токена и URL сайта."""
-        return f"{self.site_url}/{self.token}"
-
-    @property
-    def get_provider_hook_url(self) -> str:
-        """Динамически формирует путь для вебхука на основе токена и URL сайта."""
-        return f"{self.site_url}/robokassa"
+        """Динамически формирует путь для вебхука."""
+        return f"{self.site_url}/webhook"
 
 
 settings = Settings()
