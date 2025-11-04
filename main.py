@@ -47,7 +47,7 @@ def create_app():
     return app
 
 
-async def main():
+def main():
     dm = DependanciesMiddleware()
     dp.message.outer_middleware(dm)
     dp.callback_query.outer_middleware(dm)
@@ -58,4 +58,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
