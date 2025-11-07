@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     @property
     def get_webhook_url(self) -> str:
         """Динамически формирует путь для вебхука."""
-        return f"{self.site_url}/webhook"
+        return f"{self.site_url}:{self.site_port}/webhook"
 
 
 settings = Settings()
