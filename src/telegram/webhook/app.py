@@ -13,7 +13,6 @@ app = FastAPI()
 
 
 def calculate_signature(
-    *,
     login,
     cost,
     inv_id,
@@ -23,18 +22,22 @@ def calculate_signature(
     product_id,
     is_result=False,
 ):
-    # Приводим сумму к строке с 2 знаками после точки
-    cost_str = "{:.2f}".format(float(cost))
-
     if is_result:
-        # Для ResultURL
-        base_string = f"{cost_str}:{inv_id}:{password}:Shp_user_id={user_id}:Shp_user_telegram_id={user_telegram_id}:Shp_product_id={product_id}"
+        base_string = f"{cost}:{inv_id}:{password}"  # Для Result URL
     else:
-        # Для initital и SuccessURL
-        base_string = f"{login}:{cost_str}:{inv_id}:{password}:Shp_user_id={user_id}:Shp_user_telegram_id={user_telegram_id}:Shp_product_id={product_id}"
+        base_string = (
+            f"{login}:{cost}:{inv_id}:{password}"  # Для initital URL и Success URL
+        )
 
-    # Генерация MD5
-    return hashlib.md5(base_string.encode("utf-8")).hexdigest().lower()
+    additional_params = {
+        "Shp_user_id": user_id,
+        "Shp_user_telegram_id": user_telegram_id,
+        "Shp_product_id": product_id,
+    }
+    for key, value in sorted(additional_params.items()):
+        base_string += f":{key}={value}"
+
+    return hashlib.md5(base_string.encode("utf-8")).hexdigest()
 
 
 def parse_query_string(query: str) -> dict:
@@ -45,16 +48,15 @@ def check_signature_result(
     out_sum, inv_id, received_signature, password, user_id, user_telegram_id, product_id
 ) -> bool:
     signature = calculate_signature(
-        login=settings.merchant_login,
-        cost=out_sum,
-        inv_id=inv_id,
-        password=password,
-        user_id=user_id,
-        user_telegram_id=user_telegram_id,
-        product_id=product_id,
+        settings.merchant_login,
+        out_sum,
+        inv_id,
+        password,
+        user_id,
+        user_telegram_id,
+        product_id,
         is_result=True,
     )
-    print("signature", signature)
     return signature.lower() == received_signature.lower()
 
 
@@ -69,14 +71,17 @@ async def robokassa_result(request: Request):
     body_str = body_bytes.decode("utf-8")
     data = dict(parse_qsl(body_str))
 
-    OutSum = data.get("OutSum") or data.get("out_summ")      # используем ровно то, что пришло
+    OutSum = data.get("OutSum") or data.get(
+        "out_summ"
+    )  # используем ровно то, что пришло
     InvId = data.get("InvId") or data.get("inv_id")
     SignatureValue = data.get("SignatureValue") or data.get("crc")
     Shp_user_id = data.get("Shp_user_id")
     Shp_user_telegram_id = data.get("Shp_user_telegram_id")
     Shp_product_id = data.get("Shp_product_id")
 
-
+    print("result", SignatureValue.lower())
+    cost_str = "{:.2f}".format(float(OutSum))
     if check_signature_result(
         out_sum=OutSum,
         inv_id=InvId,
