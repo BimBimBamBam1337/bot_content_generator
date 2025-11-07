@@ -25,7 +25,9 @@ async def setup_bot_commands():
 async def on_startup(app):
     await setup_bot_commands()
     await bot.set_webhook(settings.site_url + "/webhook")
+
     logger.info(f"webhook set to {settings.site_url}")
+    logger.info(f"Bot started {await bot.get_me()}")
 
 
 async def on_shutdown(app):
@@ -36,14 +38,15 @@ async def on_shutdown(app):
 def create_app():
     app = web.Application()
 
-    app.router.add_post("/webhook", handle_webhook)
-
-    setup_robokassa_routes(app)
-
     dm = DependanciesMiddleware()
     dp.message.outer_middleware(dm)
     dp.callback_query.outer_middleware(dm)
+
     dp.include_routers(*routers)
+
+    app.router.add_post("/webhook", handle_webhook)
+
+    setup_robokassa_routes(app)
 
     setup_application(app, dp, bot=bot)
 
