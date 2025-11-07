@@ -4,7 +4,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.media_group import MediaGroupBuilder
-
+from src.telegram.filters import AdminFilter
 from src.database.uow import UnitOfWork
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
@@ -106,4 +106,17 @@ async def cancel(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
         text="Отменил действие",
+    )
+
+
+@router.message(Command("admin"), AdminFilter)
+async def admin(message: Message, uow: UnitOfWork):
+    """Команда для оплаты"""
+    async with uow:
+        all_users = await uow.user_repo.get_count_all_users()
+        users_subscribed = await uow.subscription_repo.get_total_today()
+        summ_subscribed = await uow.subscription_repo.get_total_cost_this_month()
+    await message.answer(
+        text=texts.statistic_text(all_users, users_subscribed, summ_subscribed),
+        reply_markup=create_vertical_keyboard(keyboards_text.admin_buttons),
     )

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, func
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from src.database.models import User
@@ -38,6 +38,11 @@ class UserRepository:
         result = await self.session.execute(select(User))
         users = result.scalars().all()
         return list(users)
+
+    async def get_count_all_users(self) -> int:
+        result = await self.session.execute(select(func.count()).where(User))
+        count = result.scalar()
+        return count if count else 0
 
     async def update_user(self, user_id: int, **kwargs) -> None:
         await self.session.execute(

@@ -248,6 +248,53 @@ confirmed_post_text = """
 
 Хочешь адаптировать текст для:
 """
+add_promocode_name_text = """
+Напишите название промокода. Например: FREEE7
+"""
+
+add_promocode_days_text = """
+Отправте числом колличество дней, которое он будет давать доступ к боту. Например: 7
+"""
+
+
+def add_promocode_seccesfull_text(promo_code_name: str):
+    return f"""Промокод: f{promo_code_name} успешно добавлен!"""
+
+
+users_info_text = f"""Навигация для статистики по пользователям"""
+
+
+def finance_statistic_text(
+    subscripton_today: int,
+    summ_today: float,
+    subscripton_this_month: int,
+    summ_this_month: float,
+):
+    return f"""
+💰 ФИНАНСОВАЯ СТАТИСТИКА 
+
+🎯 СЕГОДНЯ
+
+Подписок: {subscripton_today}
+Платежей на сумму {summ_today} руб.
+
+📅 ТЕКУЩИЙ МЕСЯЦ
+
+Подписок: {subscripton_this_month}
+Платежей на сумму {summ_this_month} руб.
+    """
+
+
+def statistic_text(all_users: int, subscripton: int, summ: float):
+    return f"""
+📊 ГЛАВНАЯ ПАНЕЛЬ
+СТАТИСТИКА ЗА СЕГОДНЯ
+
+Пользователей: {all_users}
+Подписок: {subscripton}
+
+Платежей на сумму {summ} руб.
+    """
 
 
 def type_post(text: str, state: str):

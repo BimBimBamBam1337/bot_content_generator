@@ -18,6 +18,11 @@ class SendResponse(StatesGroup):
     article = State()
 
 
+class CreatePromoCode(StatesGroup):
+    name = State()
+    days = State()
+
+
 class ConfirmResponse(SendResponse):
     telegram = State()
     instagram = State()

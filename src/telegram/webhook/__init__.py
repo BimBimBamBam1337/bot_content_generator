@@ -1,2 +1,1 @@
-from .app import handle_webhook
-from .result import setup_robokassa_routes
+from .app import robokassa_result, robokassa_success

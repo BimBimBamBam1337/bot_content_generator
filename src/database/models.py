@@ -49,6 +49,6 @@ class Subscription(Base):
         Integer, ForeignKey("promo_codes.id"), nullable=False
     )
 
-    start_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    end_date: Mapped[datetime] = mapped_column(DateTime)
+    activated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

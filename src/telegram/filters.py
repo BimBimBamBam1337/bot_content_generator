@@ -1,3 +1,4 @@
+from re import L
 from aiogram import Bot
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
@@ -5,6 +6,10 @@ from aiogram.fsm.context import FSMContext
 from datetime import datetime, timedelta, timezone
 
 from src.database.uow import UnitOfWork
+
+
+class AdminFilter(BaseFilter):
+    pass
 
 
 class PromoCodeExpiredFilter(BaseFilter):

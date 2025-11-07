@@ -7,7 +7,7 @@ from loguru import logger
 from src.config import dp, bot, settings
 from src.telegram.midlewares import DependanciesMiddleware
 from src.telegram.handlers import routers
-from src.telegram.webhook import handle_webhook, setup_robokassa_routes
+from src.telegram.webhook import robokassa_success, robokassa_result
 
 
 async def setup_bot_commands():
@@ -29,17 +29,13 @@ async def startup():
     dp.callback_query.outer_middleware(dm)
     dp.include_routers(*routers)
 
-    # Настройка бота
     await setup_bot_commands()
-    await bot.set_webhook(settings.site_url + "/webhook")
-    info = await bot.get_webhook_info()
-    print(info.url, info.pending_update_count)
-    logger.info(f"webhook set to {settings.site_url}")
-    logger.info(f"Bot started {await bot.get_me()}")
+    asyncio.create_task(dp.start_polling(bot))
 
 
 async def shutdown():
     await bot.delete_webhook()
+    await bot.close()
     logger.info("Webhook deleted")
 
 
@@ -53,12 +49,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-app.add_api_route("/webhook", handle_webhook, methods=["POST"])
+app.add_api_route("/robokassa/result", robokassa_result, methods=["POST"])
+app.add_api_route("/robokassa/success", robokassa_success, methods=["POST"])
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(
-        "main:app", host=settings.site_host, port=settings.site_port, reload=True
-    )
+    uvicorn.run("main:app", port=settings.site_port, reload=True)
