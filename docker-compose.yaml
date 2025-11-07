@@ -13,7 +13,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "4040:4040"
+      - "8000:8000"
     volumes:
       - .:/app
     networks:
@@ -52,8 +52,8 @@ services:
     volumes:
       - .:/app
     networks:
-      - network 
-  
+      - network
+
 networks:
   network:
     driver: bridge
@@ -63,4 +63,3 @@ volumes:
     driver: local
   redis:
     driver: local
-
