@@ -62,27 +62,29 @@ def check_signature_result(
 
 @app.post("/robokassa/result", response_class=PlainTextResponse)
 async def robokassa_result(
-    OutSum: str = Form(...),
-    InvId: str = Form(...),
-    SignatureValue: str = Form(...),
-    Shp_user_id: str = Form(...),
-    Shp_user_telegram_id: str = Form(...),
-    Shp_product_id: str = Form(...),
+    data,
+    # OutSum: str = Form(...),
+    # InvId: str = Form(...),
+    # SignatureValue: str = Form(...),
+    # Shp_user_id: str = Form(...),
+    # Shp_user_telegram_id: str = Form(...),
+    # Shp_product_id: str = Form(...),
 ):
     """ResultURL — Robokassa POST запрос после оплаты"""
-    if check_signature_result(
-        OutSum,
-        InvId,
-        SignatureValue,
-        settings.password2,
-        Shp_user_id,
-        Shp_user_telegram_id,
-        Shp_product_id,
-    ):
-        await bot.send_message(
-            chat_id=int(Shp_user_telegram_id), text="Оплата прошла успешна"
-        )
-        return f"OK{InvId}"
+    print(data)
+    # if check_signature_result(
+    #     OutSum,
+    #     InvId,
+    #     SignatureValue,
+    #     settings.password2,
+    #     Shp_user_id,
+    #     Shp_user_telegram_id,
+    #     Shp_product_id,
+    # ):
+    #     await bot.send_message(
+    #         chat_id=int(Shp_user_telegram_id), text="Оплата прошла успешна"
+    #     )
+    #     return f"OK{InvId}"
 
     return {"status": "faild"}
 
