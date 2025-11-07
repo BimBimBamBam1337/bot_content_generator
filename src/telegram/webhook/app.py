@@ -71,7 +71,9 @@ async def robokassa_result(
     # Shp_product_id: str = Form(...),
 ):
     """ResultURL — Robokassa POST запрос после оплаты"""
-    print(data)
+    body_bytes = await data.body()
+    body_text = body_bytes.decode("utf-8")
+    print(body_text)
     # if check_signature_result(
     #     OutSum,
     #     InvId,
