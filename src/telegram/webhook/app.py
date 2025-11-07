@@ -36,7 +36,7 @@ def calculate_signature(
     }
     for key, value in sorted(additional_params.items()):
         base_string += f":{key}={value}"
-
+    logger.info(f"Base string for signature: {base_string}")
     return hashlib.md5(base_string.encode("utf-8")).hexdigest()
 
 
