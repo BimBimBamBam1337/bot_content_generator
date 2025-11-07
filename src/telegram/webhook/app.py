@@ -62,30 +62,70 @@ def check_signature_result(
 
 @app.post("/robokassa/result", response_class=PlainTextResponse)
 async def robokassa_result(
-    data: Request,
-    # OutSum: str = Form(...),
-    # InvId: str = Form(...),
-    # SignatureValue: str = Form(...),
-    # Shp_user_id: str = Form(...),
-    # Shp_user_telegram_id: str = Form(...),
-    # Shp_product_id: str = Form(...),
+    SignatureValue: str = Form(...),
+    OutSum: str = Form(...),
+    InvId: str = Form(...),
+    Shp_user_id: str = Form(...),
+    Shp_user_telegram_id: str = Form(...),
+    Shp_product_id: str = Form(...),
 ):
-    """ResultURL — Robokassa POST запрос после оплаты"""
-    body_bytes = await data.body()
-    body_text = body_bytes.decode("utf-8")
-    print(body_text)
-    # if check_signature_result(
-    #     OutSum,
-    #     InvId,
-    #     SignatureValue,
-    #     settings.password2,
-    #     Shp_user_id,
-    #     Shp_user_telegram_id,
-    #     Shp_product_id,
-    # ):
-    #     await bot.send_message(
-    #         chat_id=int(Shp_user_telegram_id), text="Оплата прошла успешна"
-    #     )
-    #     return f"OK{InvId}"
+    """Обработка ResultURL Robokassa"""
+    logger.success("Получен ответ от Робокассы!")
 
-    return {"status": "faild"}
+    if check_signature_result(
+        out_sum=OutSum,
+        inv_id=InvId,
+        received_signature=SignatureValue,
+        password=settings.password2,
+        user_id=Shp_user_id,
+        user_telegram_id=Shp_user_telegram_id,
+        product_id=Shp_product_id,
+    ):
+        result = f"OK{InvId}"
+        logger.info(f"Успешная проверка подписи для InvId: {InvId}")
+
+        payment_data = {
+            "user_id": int(Shp_user_id),
+            "payment_id": SignatureValue,
+            "price": int(float(OutSum)),
+            "product_id": int(Shp_product_id),
+            "payment_type": "robocassa",
+        }
+
+    else:
+        result = "bad sign"
+        logger.warning(f"Неверная подпись для InvId: {InvId}")
+
+    logger.info(f"Ответ: {result}")
+    return PlainTextResponse(result)
+
+
+# @app.post("/robokassa/result", response_class=PlainTextResponse)
+# async def robokassa_result(
+#     data: Request,
+#     # OutSum: str = Form(...),
+#     # InvId: str = Form(...),
+#     # SignatureValue: str = Form(...),
+#     # Shp_user_id: str = Form(...),
+#     # Shp_user_telegram_id: str = Form(...),
+#     # Shp_product_id: str = Form(...),
+# ):
+#     """ResultURL — Robokassa POST запрос после оплаты"""
+#     body_bytes = await data.body()
+#     body_text = body_bytes.decode("utf-8")
+#     print(body_text)
+#     # if check_signature_result(
+#     #     OutSum,
+#     #     InvId,
+#     #     SignatureValue,
+#     #     settings.password2,
+#     #     Shp_user_id,
+#     #     Shp_user_telegram_id,
+#     #     Shp_product_id,
+#     # ):
+#     #     await bot.send_message(
+#     #         chat_id=int(Shp_user_telegram_id), text="Оплата прошла успешна"
+#     #     )
+#     #     return f"OK{InvId}"
+#
+#     return {"status": "faild"}

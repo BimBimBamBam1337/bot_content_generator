@@ -30,7 +30,6 @@ async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWor
         text=f"Ссылка на оплату:\n{response.url}",
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_payment_buttons),
     )
-    print(response.params)
 
 
 @router.callback_query(F.data == "confirm_payment")
