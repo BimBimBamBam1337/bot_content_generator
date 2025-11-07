@@ -12,32 +12,24 @@ from aiogram.types import Update
 app = FastAPI()
 
 
-def calculate_signature(
-    login,
-    cost,
-    inv_id,
-    password,
-    user_id,
-    user_telegram_id,
-    product_id,
-    is_result=False,
-):
+def calculate_signature(login, cost, inv_id, password, user_id=None, user_telegram_id=None, product_id=None, is_result=False):
     if is_result:
-        base_string = f"{cost}:{inv_id}:{password}"  # Для Result URL
+        base_string = f"{cost}:{inv_id}:{password}"
     else:
-        base_string = (
-            f"{login}:{cost}:{inv_id}:{password}"  # Для initital URL и Success URL
-        )
+        base_string = f"{login}:{cost}:{inv_id}:{password}"
 
     additional_params = {
-        "Shp_user_id": user_id,
-        "Shp_user_telegram_id": user_telegram_id,
-        "Shp_product_id": product_id,
+        'Shp_user_id': user_id,
+        'Shp_user_telegram_id': user_telegram_id,
+        'Shp_product_id': product_id
     }
+
+    # Добавляем только непустые параметры
     for key, value in sorted(additional_params.items()):
-        base_string += f":{key}={value}"
-    logger.info(f"Base string for signature: {base_string}")
-    return hashlib.md5(base_string.encode("utf-8")).hexdigest()
+        if value is not None:
+            base_string += f":{key}={value}"
+
+    return hashlib.md5(base_string.encode('utf-8')).hexdigest()
 
 
 def parse_query_string(query: str) -> dict:
