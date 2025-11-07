@@ -79,7 +79,11 @@ async def robokassa_result(
         Shp_user_telegram_id,
         Shp_product_id,
     ):
+        await bot.send_message(
+            chat_id=int(Shp_user_telegram_id), text="Оплата прошла успешна"
+        )
         return f"OK{InvId}"
+
     return {"status": "faild"}
 
 
