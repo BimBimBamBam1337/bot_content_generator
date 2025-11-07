@@ -13,6 +13,7 @@ app = FastAPI()
 
 
 def calculate_signature(
+    *,
     login,
     cost,
     inv_id,
@@ -47,13 +48,13 @@ def check_signature_result(
     out_sum, inv_id, received_signature, password, user_id, user_telegram_id, product_id
 ) -> bool:
     signature = calculate_signature(
-        settings.merchant_login,
-        out_sum,
-        inv_id,
-        password,
-        user_id,
-        user_telegram_id,
-        product_id,
+        login=settings.merchant_login,
+        cost=out_sum,
+        inv_id=inv_id,
+        password=password,
+        user_id=user_id,
+        user_telegram_id=user_telegram_id,
+        product_id=product_id,
         is_result=True,
     )
     return signature.lower() == received_signature.lower()
@@ -66,14 +67,20 @@ async def robokassa_result(
     SignatureValue: str = Form(...),
     Shp_user_id: str = Form(...),
     Shp_user_telegram_id: str = Form(...),
-    Shp_product_id: str = Form(...)
+    Shp_product_id: str = Form(...),
 ):
     """ResultURL — Robokassa POST запрос после оплаты"""
     if check_signature_result(
-        OutSum, InvId, SignatureValue, settings.password2, Shp_user_id, Shp_user_telegram_id, Shp_product_id
+        OutSum,
+        InvId,
+        SignatureValue,
+        settings.password2,
+        Shp_user_id,
+        Shp_user_telegram_id,
+        Shp_product_id,
     ):
         return f"OK{InvId}"
-    return "bad sign"
+    return {"status": "faild"}
 
 
 @app.get("/robokassa/success", response_class=PlainTextResponse)
@@ -88,7 +95,13 @@ async def robokassa_success(request: Request):
     product_id = params.get("Shp_product_id")
 
     if check_signature_result(
-        out_sum, inv_id, signature, settings.password1, user_id, user_telegram_id, product_id
+        out_sum,
+        inv_id,
+        signature,
+        settings.password1,
+        user_id,
+        user_telegram_id,
+        product_id,
     ):
         return "Thank you for using our service"
-    return "bad sign"
+    return {"status": "faild"}
