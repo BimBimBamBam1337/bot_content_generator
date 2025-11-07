@@ -25,7 +25,8 @@ async def setup_bot_commands():
 async def on_startup(app):
     await setup_bot_commands()
     await bot.set_webhook(settings.site_url + "/webhook")
-
+    info = await bot.get_webhook_info()
+    print(info.url, info.pending_update_count)
     logger.info(f"webhook set to {settings.site_url}")
     logger.info(f"Bot started {await bot.get_me()}")
 
