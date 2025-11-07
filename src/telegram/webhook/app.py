@@ -23,21 +23,18 @@ def calculate_signature(
     product_id,
     is_result=False,
 ):
+    # Приводим сумму к строке с 2 знаками после точки
+    cost_str = "{:.2f}".format(float(cost))
+
     if is_result:
-        base_string = f"{cost}:{inv_id}:{password}"  # Для ResultURL
+        # Для ResultURL
+        base_string = f"{cost_str}:{inv_id}:{password}:Shp_user_id={user_id}:Shp_user_telegram_id={user_telegram_id}:Shp_product_id={product_id}"
     else:
-        base_string = f"{login}:{cost}:{inv_id}:{password}"  # Для initital и SuccessURL
+        # Для initital и SuccessURL
+        base_string = f"{login}:{cost_str}:{inv_id}:{password}:Shp_user_id={user_id}:Shp_user_telegram_id={user_telegram_id}:Shp_product_id={product_id}"
 
-    additional_params = {
-        "Shp_user_id": user_id,
-        "Shp_user_telegram_id": user_telegram_id,
-        "Shp_product_id": product_id,
-    }
-
-    for key, value in sorted(additional_params.items()):
-        base_string += f":{key}={value}"
-
-    return hashlib.md5(base_string.encode("utf-8")).hexdigest()
+    # Генерация MD5
+    return hashlib.md5(base_string.encode("utf-8")).hexdigest().lower()
 
 
 def parse_query_string(query: str) -> dict:
