@@ -61,16 +61,21 @@ def check_signature_result(
 
 
 @app.post("/robokassa/result", response_class=PlainTextResponse)
-async def robokassa_result(
-    SignatureValue: str = Form(...),
-    OutSum: str = Form(...),
-    InvId: str = Form(...),
-    Shp_user_id: str = Form(...),
-    Shp_user_telegram_id: str = Form(...),
-    Shp_product_id: str = Form(...),
-):
-    """Обработка ResultURL Robokassa"""
+async def robokassa_result(request: Request):
+    """
+    Обрабатывает POST от Robokassa ResultURL, учитывая дубли полей.
+    """
     logger.success("Получен ответ от Робокассы!")
+
+    form = await request.form()
+    data = dict(form)
+    # Берем приоритетные поля (Robokassa дублирует в разной капитализации)
+    OutSum = data.get("OutSum") or data.get("out_summ")
+    InvId = data.get("InvId") or data.get("inv_id")
+    SignatureValue = data.get("SignatureValue") or data.get("crc")
+    Shp_user_id = data.get("Shp_user_id")
+    Shp_user_telegram_id = data.get("Shp_user_telegram_id")
+    Shp_product_id = data.get("Shp_product_id")
 
     if check_signature_result(
         out_sum=OutSum,
