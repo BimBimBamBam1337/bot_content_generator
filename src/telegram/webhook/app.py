@@ -12,16 +12,25 @@ from aiogram.types import Update
 app = FastAPI()
 
 
-def calculate_signature(login, cost, inv_id, password, user_id, user_telegram_id, product_id, is_result=False):
+def calculate_signature(
+    login,
+    cost,
+    inv_id,
+    password,
+    user_id,
+    user_telegram_id,
+    product_id,
+    is_result=False,
+):
     if is_result:
         base_string = f"{cost}:{inv_id}:{password}"
     else:
         base_string = f"{login}:{cost}:{inv_id}:{password}"
 
     additional_params = {
-        'Shp_user_id': user_id,
-        'Shp_user_telegram_id': user_telegram_id,
-        'Shp_product_id': product_id
+        "Shp_user_id": user_id,
+        "Shp_user_telegram_id": user_telegram_id,
+        "Shp_product_id": product_id,
     }
 
     # Добавляем только непустые параметры
@@ -29,7 +38,7 @@ def calculate_signature(login, cost, inv_id, password, user_id, user_telegram_id
         if value is not None:
             base_string += f":{key}={value}"
 
-    return hashlib.md5(base_string.encode('utf-8')).hexdigest()
+    return hashlib.md5(base_string.encode("utf-8")).hexdigest()
 
 
 def parse_query_string(query: str) -> dict:
@@ -87,10 +96,10 @@ async def robokassa_result(request: Request):
         logger.info(f"Успешная проверка подписи для InvId: {InvId}")
 
         payment_data = {
-            "user_id": int(Shp_user_id),
+            "user_id": Shp_user_id,
             "payment_id": SignatureValue,
-            "price": int(float(OutSum)),
-            "product_id": int(Shp_product_id),
+            "price": OutSum,
+            "product_id": Shp_product_id,
             "payment_type": "robocassa",
         }
 
