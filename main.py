@@ -45,14 +45,13 @@ def create_app():
 
     dp.include_routers(*routers)
 
-    app.router.add_post("/webhook", handle_webhook)
+    setup_application(app, dp, bot=bot)
 
     setup_robokassa_routes(app)
 
-    setup_application(app, dp, bot=bot)
-
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
+
     return app
 
 
