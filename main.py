@@ -54,4 +54,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    web.run_app(app, host=settings.SITE_HOST, port=settings.SITE_PORT)
+    web.run_app(app, host=settings.site_host, port=settings.site_port)
