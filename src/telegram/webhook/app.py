@@ -67,19 +67,18 @@ async def robokassa_result(request: Request):
 
     body_bytes = await request.body()
     body_str = body_bytes.decode("utf-8")
-    data = dict(parse_qsl(body_str))  # превращаем строку в словарь
+    data = dict(parse_qsl(body_str))
 
-    # Берем приоритетные поля (Robokassa иногда дублирует)
-    OutSum = data.get("OutSum") or data.get("out_summ")
+    OutSum = data.get("OutSum") or data.get("out_summ")      # используем ровно то, что пришло
     InvId = data.get("InvId") or data.get("inv_id")
     SignatureValue = data.get("SignatureValue") or data.get("crc")
     Shp_user_id = data.get("Shp_user_id")
     Shp_user_telegram_id = data.get("Shp_user_telegram_id")
     Shp_product_id = data.get("Shp_product_id")
-    print("result", SignatureValue.lower())
-    cost_str = "{:.2f}".format(float(OutSum))
+
+
     if check_signature_result(
-        out_sum=cost_str,
+        out_sum=OutSum,
         inv_id=InvId,
         received_signature=SignatureValue,
         password=settings.password2,
