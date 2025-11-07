@@ -22,43 +22,40 @@ async def setup_bot_commands():
     )
 
 
-async def on_startup(app):
+async def on_startup(app: web.Application):
     await setup_bot_commands()
-    await bot.set_webhook(settings.get_webhook_url)
-    logger.info(f"Webhook set to {settings.get_webhook_url}")
-    logger.info(f"Bot started as {await bot.get_me()}")
+    webhook_url = settings.get_webhook_url
+    await bot.set_webhook(webhook_url, drop_pending_updates=True)
+    logger.info(f"Webhook set to {webhook_url}")
+    me = await bot.get_me()
+    logger.info(f"Bot started as {me.username}")
 
 
-async def on_shutdown(app):
+async def on_shutdown(app: web.Application):
     await bot.delete_webhook()
     logger.info("Webhook deleted")
 
 
-def create_app():
-    app = web.Application()
-
-    # Telegram webhook
-    app.router.add_post("/webhook", handle_webhook)
-
-    # Robokassa маршруты
-    setup_robokassa_routes(app)
-
-    setup_application(app, dp, bot=bot)
-    app.on_startup.append(on_startup)
-    app.on_shutdown.append(on_shutdown)
-    return app
-
-
-async def main():
+def create_app() -> web.Application:
     dm = DependanciesMiddleware()
-    await setup_bot_commands()
     dp.message.outer_middleware(dm)
     dp.callback_query.outer_middleware(dm)
     dp.include_routers(*routers)
-    await bot.delete_webhook(drop_pending_updates=False)
-    await dp.start_polling(bot)
-    logger.info(f"Bot started as {await bot.get_me()}")
+
+    app = web.Application()
+
+    app.router.add_post("/webhook", handle_webhook)
+
+    setup_robokassa_routes(app)
+
+    setup_application(app, dp, bot=bot)
+
+    app.on_startup.append(on_startup)
+    app.on_shutdown.append(on_shutdown)
+
+    return app
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    app = create_app()
+    web.run_app(app, host=settings.site_host, port=settings.site_port)
