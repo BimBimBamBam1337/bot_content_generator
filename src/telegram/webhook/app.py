@@ -12,7 +12,7 @@ from aiogram.types import Update
 app = FastAPI()
 
 
-def calculate_signature(login, cost, inv_id, password, user_id=None, user_telegram_id=None, product_id=None, is_result=False):
+def calculate_signature(login, cost, inv_id, password, user_id, user_telegram_id, product_id, is_result=False):
     if is_result:
         base_string = f"{cost}:{inv_id}:{password}"
     else:
