@@ -7,7 +7,7 @@ from loguru import logger
 from src.config import dp, bot, settings
 from src.telegram.midlewares import DependanciesMiddleware
 from src.telegram.handlers import routers
-from src.telegram.webhook import robokassa_success, robokassa_result
+from src.telegram.webhook import robokassa_result
 
 
 async def setup_bot_commands():

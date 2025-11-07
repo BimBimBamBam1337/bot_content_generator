@@ -62,7 +62,7 @@ def check_signature_result(
 
 @app.post("/robokassa/result", response_class=PlainTextResponse)
 async def robokassa_result(
-    data,
+    data: Request,
     # OutSum: str = Form(...),
     # InvId: str = Form(...),
     # SignatureValue: str = Form(...),

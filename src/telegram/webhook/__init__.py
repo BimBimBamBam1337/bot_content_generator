@@ -1,1 +1,1 @@
-from .app import robokassa_result, robokassa_success
+from .app import robokassa_result
