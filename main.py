@@ -1,8 +1,8 @@
 import asyncio
-from aiohttp import web
-from loguru import logger
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from aiogram.types import BotCommand
-from aiogram.webhook.aiohttp_server import setup_application
+from loguru import logger
 
 from src.config import dp, bot, settings
 from src.telegram.midlewares import DependanciesMiddleware
@@ -22,7 +22,14 @@ async def setup_bot_commands():
     )
 
 
-async def on_startup(app):
+async def startup():
+    # Настройка middleware и роутеров
+    dm = DependanciesMiddleware()
+    dp.message.outer_middleware(dm)
+    dp.callback_query.outer_middleware(dm)
+    dp.include_routers(*routers)
+
+    # Настройка бота
     await setup_bot_commands()
     await bot.set_webhook(settings.site_url + "/webhook")
     info = await bot.get_webhook_info()
@@ -31,30 +38,27 @@ async def on_startup(app):
     logger.info(f"Bot started {await bot.get_me()}")
 
 
-async def on_shutdown(app):
+async def shutdown():
     await bot.delete_webhook()
     logger.info("Webhook deleted")
 
 
-def create_app():
-    app = web.Application()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await startup()
+    yield
+    await shutdown()
 
-    dm = DependanciesMiddleware()
-    dp.message.outer_middleware(dm)
-    dp.callback_query.outer_middleware(dm)
 
-    dp.include_routers(*routers)
+app = FastAPI(lifespan=lifespan)
 
-    setup_application(app, dp, bot=bot)
 
-    setup_robokassa_routes(app)
-
-    app.on_startup.append(on_startup)
-    app.on_shutdown.append(on_shutdown)
-
-    return app
+app.add_api_route("/webhook", handle_webhook, methods=["POST"])
 
 
 if __name__ == "__main__":
-    app = create_app()
-    web.run_app(app, host=settings.site_host, port=settings.site_port)
+    import uvicorn
+
+    uvicorn.run(
+        "main:app", host=settings.site_host, port=settings.site_port, reload=True
+    )

@@ -1,19 +1,21 @@
 from aiohttp import web
 from aiogram.types import Update
+from fastapi import FastAPI, Request
 from loguru import logger
+
 from src.config import bot, dp, settings
 
-from aiogram.webhook.aiohttp_server import setup_application
+
+app = FastAPI()
 
 
-async def handle_webhook(request: web.Request):
+@app.post("/webhook")
+async def handle_webhook(request: Request):
     try:
         data = await request.json()
         update = Update(**data)
-        await dp.feed_update(
-            bot, update
-        )  # в aiogram v3 feed_update существует у экземпляра Dispatcher
-        return web.Response(status=200)
+        await dp.feed_update(bot, update)
+        return {"status": "ok"}
     except Exception as e:
         logger.exception(f"Ошибка при обработке вебхука: {e}")
-        return web.Response(status=500)
+        return {"status": "error"}
