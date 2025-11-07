@@ -81,7 +81,7 @@ async def robokassa_result(request: Request):
     Shp_product_id = data.get("Shp_product_id")
     print(SignatureValue)
     if check_signature_result(
-        out_sum=OutSum,
+        out_sum=int(OutSum),
         inv_id=InvId,
         received_signature=SignatureValue,
         password=settings.password2,
