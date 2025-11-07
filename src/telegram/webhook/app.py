@@ -80,8 +80,9 @@ async def robokassa_result(request: Request):
     Shp_user_telegram_id = data.get("Shp_user_telegram_id")
     Shp_product_id = data.get("Shp_product_id")
     print(SignatureValue)
+    cost_str = "{:.2f}".format(float(OutSum))
     if check_signature_result(
-        out_sum=int(OutSum),
+        out_sum=cost_str,
         inv_id=InvId,
         received_signature=SignatureValue,
         password=settings.password2,
