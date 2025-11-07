@@ -18,4 +18,4 @@ RUN pip install poetry
 RUN poetry config virtualenvs.in-project false
 RUN poetry install --no-root
 
-CMD ["uvicorn", "main:app","--port", "8000"]
+CMD ["poetry", "run","uvicorn", "main:app","--port", "8000"]
