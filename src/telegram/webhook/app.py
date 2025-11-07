@@ -87,27 +87,3 @@ async def robokassa_result(
     #     return f"OK{InvId}"
 
     return {"status": "faild"}
-
-
-@app.get("/robokassa/success", response_class=PlainTextResponse)
-async def robokassa_success(request: Request):
-    """SuccessURL — GET запрос после успешной оплаты"""
-    params = parse_query_string(str(request.query_string))
-    out_sum = params.get("OutSum")
-    inv_id = params.get("InvId")
-    signature = params.get("SignatureValue")
-    user_id = params.get("Shp_user_id")
-    user_telegram_id = params.get("Shp_user_telegram_id")
-    product_id = params.get("Shp_product_id")
-
-    if check_signature_result(
-        out_sum,
-        inv_id,
-        signature,
-        settings.password1,
-        user_id,
-        user_telegram_id,
-        product_id,
-    ):
-        return "Thank you for using our service"
-    return {"status": "faild"}
