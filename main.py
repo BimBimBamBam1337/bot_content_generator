@@ -24,8 +24,8 @@ async def setup_bot_commands():
 
 async def on_startup(app):
     await setup_bot_commands()
-    await bot.set_webhook(settings.SITE_URL + "/webhook")
-    logger.info(f"Webhook set to {settings.SITE_URL}")
+    await bot.set_webhook(settings.site_url + "/webhook")
+    logger.info(f"webhook set to {settings.site_url}")
 
 
 async def on_shutdown(app):
