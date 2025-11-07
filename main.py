@@ -51,9 +51,3 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_api_route("/robokassa/result", robokassa_result, methods=["POST"])
 app.add_api_route("/robokassa/success", robokassa_success, methods=["POST"])
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app="main:app", port=settings.site_port, reload=True)
