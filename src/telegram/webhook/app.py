@@ -1,6 +1,6 @@
 import hashlib
 from urllib import parse
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl
 
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import PlainTextResponse
@@ -63,13 +63,15 @@ def check_signature_result(
 @app.post("/robokassa/result", response_class=PlainTextResponse)
 async def robokassa_result(request: Request):
     """
-    Обрабатывает POST от Robokassa ResultURL, учитывая дубли полей.
+    Обрабатывает ResultURL Robokassa, когда приходит строка запроса.
     """
     logger.success("Получен ответ от Робокассы!")
 
-    form = await request.form()
-    data = dict(form)
-    # Берем приоритетные поля (Robokassa дублирует в разной капитализации)
+    body_bytes = await request.body()
+    body_str = body_bytes.decode("utf-8")
+    data = dict(parse_qsl(body_str))  # превращаем строку в словарь
+
+    # Берем приоритетные поля (Robokassa иногда дублирует)
     OutSum = data.get("OutSum") or data.get("out_summ")
     InvId = data.get("InvId") or data.get("inv_id")
     SignatureValue = data.get("SignatureValue") or data.get("crc")
