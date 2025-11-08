@@ -98,6 +98,7 @@ async def robokassa_result(request: Request):
                 subscription = await uow.subscription_repo.create(
                     user_id=int(InvId), cost=int(int_OutSum), trial=365
                 )
+                return
             subscription = await uow.subscription_repo.create(
                 user_id=int(InvId), cost=int(int_OutSum), trial=30
             )
