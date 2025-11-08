@@ -9,7 +9,12 @@ from src.database.uow import UnitOfWork
 
 
 class AdminFilter(BaseFilter):
-    pass
+    async def __call__(self, message: Message, uow: UnitOfWork) -> bool:
+        async with uow:
+            user = await uow.user_repo.get(message.from_user.id)
+            if user.is_admin:
+                return True
+            return False
 
 
 class PromoCodeExpiredFilter(BaseFilter):
