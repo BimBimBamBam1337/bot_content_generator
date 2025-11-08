@@ -109,7 +109,7 @@ async def cancel(message: Message, state: FSMContext):
     )
 
 
-@router.message(Command("admin"), AdminFilter)
+@router.message(Command("admin"), AdminFilter())
 async def admin(message: Message, uow: UnitOfWork):
     """Команда для оплаты"""
     async with uow:
