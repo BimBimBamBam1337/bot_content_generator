@@ -103,3 +103,7 @@ users_info_buttons = {
     "3": ["🆕 Новые за неделю", "new_for_week"],
     "3": ["⬅️ Назад", "back_to_users"],
 }
+
+bact_to_admin_buttons = {
+    "0": ["Назад", "back_to_admin"],
+}

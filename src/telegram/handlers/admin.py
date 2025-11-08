@@ -19,6 +19,19 @@ from src.constants import *
 router = Router()
 
 
+@router.callback_query(F.data == "bact_to_admin", AdminFilter())
+async def admin(call: CallbackQuery, uow: UnitOfWork):
+    """Команда для оплаты"""
+    async with uow:
+        all_users = await uow.user_repo.get_all()
+        users_subscribed = await uow.subscription_repo.get_total_today()
+        summ_subscribed = await uow.subscription_repo.get_total_cost_this_month()
+    await call.message.answer(
+        text=texts.statistic_text(len(all_users), users_subscribed, summ_subscribed),
+        reply_markup=create_vertical_keyboard(keyboards_text.admin_buttons),
+    )
+
+
 @router.callback_query(F.data == "users")
 async def users(call: CallbackQuery, uow: UnitOfWork):
     await call.message.answer(
@@ -44,7 +57,7 @@ async def payments(call: CallbackQuery, uow: UnitOfWork):
             users_subscribed_this_month,
             users_subscribed_summ_this_month,
         ),
-        reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
+        reply_markup=create_vertical_keyboard(keyboards_text.bact_to_admin_buttons),
     )
 
 
