@@ -3,8 +3,8 @@ subscription_menu_buttons = {
     "1": ["Активировать промокод", "activate_promocode"],
 }
 how_much_buttons = {
-    "0": ["1 месяц — 499Р", "one_month:549"],
-    "1": ["1 год — 4999Р", "one_year:5499"],
+    "0": ["1 месяц — 499Р", "one_month:499"],
+    "1": ["1 год — 4999Р", "one_year:4999"],
 }
 go_back_to_menu = {
     "0": ["Оформить подписку", "subscribe"],
