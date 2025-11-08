@@ -17,26 +17,31 @@ class AdminFilter(BaseFilter):
             return False
 
 
-class PromoCodeExpiredFilter(BaseFilter):
+class SubscriptionExpiredFilter(BaseFilter):
     async def __call__(
         self, message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext
     ) -> bool:
         async with uow:
-            user = await uow.user_repo.get(message.from_user.id)
+            # Получаем подписку пользователя
+            subscription = await uow.subscription_repo.get_active_by_user_id(
+                message.from_user.id
+            )
 
-            if not user.used_promo_codes:  # type: ignore
+            if not subscription:
+                await message.answer("У тебя нет активной подписки")
+                await state.clear()
                 return False
-            promo_code, used_date_str = next(reversed(user.used_promo_codes.items()))
-            code = await uow.promo_code_repo.get(promo_code)
-            used_date = datetime.fromisoformat(used_date_str)
-
-            if used_date.tzinfo is None:
-                used_date = used_date.replace(tzinfo=timezone.utc)
 
             now = datetime.now(timezone.utc)
 
-            if now - used_date > timedelta(days=code.access_days):
-                await message.answer("Промокод истёк, попробуй найти новый")
+            # Если подписка истекла
+            if subscription.expires_at.tzinfo is None:
+                subscription.expires_at = subscription.expires_at.replace(
+                    tzinfo=timezone.utc
+                )
+
+            if now > subscription.expires_at:
+                await message.answer("Твоя подписка истекла, попробуй найти новую")
                 await state.clear()
                 return False
 

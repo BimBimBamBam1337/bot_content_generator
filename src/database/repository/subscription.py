@@ -38,14 +38,16 @@ class SubscriptionRepository:
         )
         await self.session.flush()
 
-    async def get_total_cost_today(self) -> float:
-        today = datetime.now().date()
-        result = await self.session.execute(
-            select(func.sum(Subscription.cost)).where(
-                Subscription.activated_at >= today
+    async def get_active_by_user_id(self, user_id: int):
+        subscription = await self.session.execute(
+            select(
+                func.sum(Subscription.cost).where(
+                    Subscription.user_id == user_id, Subscription.is_active == True
+                )
             )
         )
-        return float(result.scalar()) if result.scalar() else 0.0
+        return subscription.scalar_one_or_none()
+
     async def get_total_cost_today(self) -> float:
         today = datetime.now().date()
         total = await self.session.scalar(

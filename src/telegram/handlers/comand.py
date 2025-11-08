@@ -4,6 +4,8 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.media_group import MediaGroupBuilder
+
+from src.telegram.filters import SubscriptionExpiredFilter
 from src.telegram.filters import AdminFilter
 from src.database.uow import UnitOfWork
 from src.telegram import texts
@@ -81,7 +83,7 @@ async def language(message: Message):
     )
 
 
-@router.message(Command("generate"))
+@router.message(Command("generate"), SubscriptionExpiredFilter())
 async def generate(message: Message):
     """Команда для генерирования текста"""
 

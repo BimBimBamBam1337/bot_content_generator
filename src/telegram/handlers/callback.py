@@ -9,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 from src.client_openai import AssistantOpenAI
 from src.config import settings
 from src.database.uow import UnitOfWork
-from src.telegram.filters import PromoCodeExpiredFilter
+from src.telegram.filters import SubscriptionExpiredFilter
 from src.telegram.states import Chat, Promo, SendResponse, ConfirmResponse
 from src.telegram import texts
 from src.telegram.keyboards.inline import keyboards_text
@@ -62,7 +62,7 @@ async def back_to_menu(
     )
 
 
-@router.callback_query(F.data == "assemble_posts", PromoCodeExpiredFilter())
+@router.callback_query(F.data == "assemble_posts", SubscriptionExpiredFilter())
 async def assemble_posts(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
