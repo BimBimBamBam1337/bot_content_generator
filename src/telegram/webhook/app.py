@@ -98,9 +98,7 @@ async def robokassa_result(request: Request):
             "product_id": Shp_product_id,
             "payment_type": "robocassa",
         }
-        await bot.send_message(
-            chat_id=Shp_user_telegram_id, text="Оплата прошла успешно"
-        )
+        await bot.send_message(chat_id=InvId, text="Оплата прошла успешно")
     else:
         result = "bad sign"
         logger.warning(f"Неверная подпись для InvId: {InvId}")
