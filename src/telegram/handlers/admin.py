@@ -68,9 +68,6 @@ async def give_days_promo_code(message: Message, uow: UnitOfWork, state: FSMCont
             if promo_code:
                 await message.answer(
                     text=texts.add_promocode_seccesfull_text(promo_code.code),
-                    reply_markup=create_vertical_keyboard(
-                        keyboards_text.how_much_buttons
-                    ),
                 )
         await state.clear()
     except Exception:

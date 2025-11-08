@@ -257,7 +257,7 @@ add_promocode_days_text = """
 
 
 def add_promocode_seccesfull_text(promo_code_name: str):
-    return f"""Промокод: f{promo_code_name} успешно добавлен!"""
+    return f"""Промокод: {promo_code_name} успешно добавлен!"""
 
 
 users_info_text = f"""Навигация для статистики по пользователям"""
