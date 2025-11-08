@@ -29,8 +29,21 @@ async def users(call: CallbackQuery, uow: UnitOfWork):
 
 @router.callback_query(F.data == "payments")
 async def payments(call: CallbackQuery, uow: UnitOfWork):
+    async with uow:
+        users_subscribed_summ_today = await uow.subscription_repo.get_total_cost_today()
+        users_subscribed_today = await uow.subscription_repo.get_total_today()
+        users_subscribed_this_month = await uow.subscription_repo.get_total_this_month()
+        users_subscribed_summ_this_month = (
+            await uow.subscription_repo.get_total_cost_this_month()
+        )
+
     await call.message.answer(
-        text=texts.finance_statistic_text,
+        text=texts.finance_statistic_text(
+            users_subscribed_today,
+            users_subscribed_summ_today,
+            users_subscribed_this_month,
+            users_subscribed_summ_this_month,
+        ),
         reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
     )
 
