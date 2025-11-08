@@ -94,7 +94,7 @@ async def robokassa_result(request: Request):
         logger.info(f"Успешная проверка подписи для InvId: {InvId}")
         async with UnitOfWork(SessionFactory) as uow:
             subscription = await uow.subscription_repo.create(
-                user_id=InvId, cost=OutSum
+                user_id=int(InvId), cost=int(OutSum)
             )
             if subscription:
                 await bot.send_message(
