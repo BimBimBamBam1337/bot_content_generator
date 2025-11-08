@@ -39,11 +39,6 @@ class UserRepository:
         users = result.scalars().all()
         return list(users)
 
-    async def get_count_all_users(self) -> int:
-        result = await self.session.execute(select(func.count()).where(User))
-        count = result.scalar()
-        return count if count else 0
-
     async def update_user(self, user_id: int, **kwargs) -> None:
         await self.session.execute(
             update(User).where(User.id == user_id).values(**kwargs)
