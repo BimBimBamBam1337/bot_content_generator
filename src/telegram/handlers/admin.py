@@ -39,7 +39,6 @@ async def payments(call: CallbackQuery, uow: UnitOfWork):
 async def add_promo_code(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
         text=texts.add_promocode_name_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
     )
     await state.set_state(CreatePromoCode.name)
 
@@ -53,7 +52,6 @@ async def name_promo_code(message: Message, uow: UnitOfWork, state: FSMContext):
             return
     await message.answer(
         text=texts.add_promocode_days_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
     )
     await state.update_data({"name": message.text})
     await state.set_state(CreatePromoCode.days)
@@ -61,13 +59,15 @@ async def name_promo_code(message: Message, uow: UnitOfWork, state: FSMContext):
 
 @router.message(CreatePromoCode.days)
 async def give_days_promo_code(message: Message, uow: UnitOfWork, state: FSMContext):
-    name = await state.get_data()
+    data = await state.get_data()
     try:
         async with uow:
-            promo_code = await uow.promo_code_repo.create(name, int(message.text))
+            promo_code = await uow.promo_code_repo.create(
+                data.get("name"), int(message.text)
+            )
             if promo_code:
                 await message.answer(
-                    text=texts.add_promocode_seccesfull(promo_code.code),
+                    text=texts.add_promocode_seccesfull_text(promo_code.code),
                     reply_markup=create_vertical_keyboard(
                         keyboards_text.how_much_buttons
                     ),
