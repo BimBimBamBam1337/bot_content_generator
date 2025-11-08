@@ -40,8 +40,7 @@ class SubscriptionRepository:
 
     async def get_active_by_user_id(self, user_id: int):
         subscription = await self.session.execute(
-            select(
-                func.sum(Subscription.cost).where(
+            select(Subscription).where(
                     Subscription.user_id == user_id, Subscription.is_active == True
                 )
             )
