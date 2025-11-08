@@ -30,7 +30,7 @@ async def users(call: CallbackQuery, uow: UnitOfWork):
 @router.callback_query(F.data == "payments")
 async def payments(call: CallbackQuery, uow: UnitOfWork):
     await call.message.answer(
-        text=texts.pay_text,
+        text=texts.finance_statistic_text,
         reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
     )
 
