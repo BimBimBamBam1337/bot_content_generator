@@ -6,7 +6,9 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import PlainTextResponse
 from loguru import logger
 
+from src.database.engine import SessionFactory
 from src.config import bot, dp, settings
+from src.database.uow import UnitOfWork
 from aiogram.types import Update
 
 app = FastAPI()
@@ -90,15 +92,15 @@ async def robokassa_result(request: Request):
     ):
         result = f"OK{InvId}"
         logger.info(f"Успешная проверка подписи для InvId: {InvId}")
-
-        payment_data = {
-            "user_id": Shp_user_id,
-            "payment_id": SignatureValue,
-            "price": OutSum,
-            "product_id": Shp_product_id,
-            "payment_type": "robocassa",
-        }
-        await bot.send_message(chat_id=InvId, text="Оплата прошла успешно")
+        async with UnitOfWork(SessionFactory) as uow:
+            subscription = await uow.subscription_repo.create(
+                user_id=InvId, cost=OutSum
+            )
+            if subscription:
+                await bot.send_message(
+                    chat_id=InvId,
+                    text="Оплата прошла успешно. У вас активированна подписка",
+                )
     else:
         result = "bad sign"
         logger.warning(f"Неверная подпись для InvId: {InvId}")
