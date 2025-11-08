@@ -6,7 +6,7 @@ payment = Robokassa(
     merchant_login=settings.merchant_login,
     password1=settings.password1,
     password2=settings.password2,
-    is_test=False,
+    is_test=True,
 )
 
 
