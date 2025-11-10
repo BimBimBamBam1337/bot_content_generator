@@ -10,7 +10,7 @@ class SubscriptionRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, user_id: int, cost: int, trial: int = 0) -> Subscription:
+    async def create(self, user_id: int, cost: int = 0, trial: int = 0) -> Subscription:
         expires_at = datetime.now() + timedelta(trial)
         subscription = Subscription(user_id=user_id, cost=cost, expires_at=expires_at)
         self.session.add(subscription)
