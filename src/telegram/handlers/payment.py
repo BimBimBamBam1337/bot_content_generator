@@ -28,5 +28,4 @@ async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWor
     response = create_payment(call.from_user.id, price)
     await call.message.answer(
         text=f"Ссылка на оплату:\n{response.url}",
-        reply_markup=create_vertical_keyboard(keyboards_text.confirm_payment_buttons),
     )
