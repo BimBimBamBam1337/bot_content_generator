@@ -45,7 +45,9 @@ async def check_code(message: Message, uow: UnitOfWork, state: FSMContext):
         if code:
             code = await uow.promo_code_repo.get(message.text)
             await uow.subscription_repo.create(
-                message.from_user.id, trial=int(code.access_days)
+                user_id=message.from_user.id,
+                promo_code_id=code.id,
+                trial=int(code.access_days),
             )
         await message.answer(
             text=texts.rigth_promocde_text,
