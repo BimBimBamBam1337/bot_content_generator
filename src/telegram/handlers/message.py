@@ -41,7 +41,7 @@ async def check_code(message: Message, uow: UnitOfWork, state: FSMContext):
             await message.answer("Ты уже использовал этот промокод")
             return
 
-        await uow.user_repo.add_promo_code(user, message.text)
+        code = await uow.user_repo.add_promo_code(user, message.text)
 
         await message.answer(
             text=texts.rigth_promocde_text,

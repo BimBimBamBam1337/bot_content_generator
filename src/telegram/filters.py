@@ -34,13 +34,12 @@ class SubscriptionExpiredFilter(BaseFilter):
 
             now = datetime.now(timezone.utc)
 
-            # Если подписка истекла
-            if subscription.expires_at.tzinfo is None:
-                subscription.expires_at = subscription.expires_at.replace(
-                    tzinfo=timezone.utc
-                )
+            # Create a timezone-aware copy for comparison without modifying the original
+            expires_at_aware = subscription.expires_at
+            if expires_at_aware.tzinfo is None:
+                expires_at_aware = expires_at_aware.replace(tzinfo=timezone.utc)
 
-            if now > subscription.expires_at:
+            if now > expires_at_aware:
                 await message.answer("Твоя подписка истекла, попробуй найти новую")
                 await state.clear()
                 return False
