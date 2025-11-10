@@ -92,15 +92,15 @@ async def robokassa_result(request: Request):
     ):
         result = f"OK{InvId}"
         logger.info(f"Успешная проверка подписи для InvId: {InvId}")
-        int_OutSum = int(OutSum)
+        int_OutSum = int(float(OutSum))
         async with UnitOfWork(SessionFactory) as uow:
             if int_OutSum == 4999:
                 subscription = await uow.subscription_repo.create(
-                    user_id=int(InvId), cost=int(int_OutSum), trial=365
+                    user_id=int(InvId), cost=int_OutSum, trial=365
                 )
                 return
             subscription = await uow.subscription_repo.create(
-                user_id=int(InvId), cost=int(int_OutSum), trial=30
+                user_id=int(InvId), cost=int_OutSum, trial=30
             )
             if subscription:
                 await bot.send_message(
