@@ -32,6 +32,39 @@ async def admin(call: CallbackQuery, uow: UnitOfWork):
     )
 
 
+# @router.callback_query(F.data == "with_subscrioption")
+# async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork):
+#     await call.message.answer(
+#         text=texts.with_subscription,
+#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+#     )
+#
+#
+# @router.callback_query(F.data == "without_subscrioption")
+# async def without_subscrioption(call: CallbackQuery, uow: UnitOfWork):
+#     await call.message.answer(
+#         text=texts.without_subscription,
+#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+#     )
+#
+#
+# @router.callback_query(F.data == "excpires_3_days")
+# async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
+#     await call.message.answer(
+#         text=texts.excpires_3_days,
+#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+#     )
+#
+#
+# @router.callback_query(F.data == "new_for_week")
+# async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
+#     await call.message.answer(
+#         text=texts.new_for_week,
+#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+#     )
+#
+
+
 @router.callback_query(F.data == "users")
 async def users(call: CallbackQuery, uow: UnitOfWork):
     await call.message.answer(

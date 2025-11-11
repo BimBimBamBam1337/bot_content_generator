@@ -45,7 +45,7 @@ class SubscriptionRepository:
         )
         await self.session.flush()
 
-    async def get_active_by_user_id(self, user_id: int):
+    async def get_active_by_user_id(self, user_id: int) -> Subscription:
         subscription = await self.session.execute(
             select(Subscription)
             .where(Subscription.user_id == user_id, Subscription.is_active == True)
@@ -137,3 +137,21 @@ class SubscriptionRepository:
             select(User.id).where(User.id.not_in(active_users_subquery))
         )
         return list(users)
+
+    async def get_total_cost_by_user_id(self, user_id: int) -> float:
+
+        total = await self.session.scalar(
+            select(func.sum(Subscription.cost)).where(
+                Subscription.user_id == user_id,
+            )
+        )
+        return float(total) if total else 0.0
+
+    async def get_list_actvated_at(self, user_id: int) -> list[datetime]:
+
+        total = await self.session.scalars(
+            select(Subscription.activated_at).where(
+                Subscription.user_id == user_id,
+            )
+        )
+        return list(total.all())

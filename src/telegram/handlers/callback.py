@@ -24,10 +24,17 @@ router = Router()
 
 @router.callback_query(F.data == "subscribe")
 async def subscribe(call: CallbackQuery, uow: UnitOfWork):
-    await call.message.answer(
-        text=texts.pay_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
-    )
+    async with uow:
+        subscription = await uow.subscription_repo.get_active_by_user_id(
+            call.from_user.id
+        )
+        if subscription.is_active:
+            await call.answer(text="У вас уже активирована подписка")
+        else:
+            await call.answer(
+                text=texts.pay_text,
+                reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
+            )
 
 
 @router.callback_query(F.data == "activate_promocode")

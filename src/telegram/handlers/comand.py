@@ -40,13 +40,19 @@ async def start(message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext):
 
 
 @router.message(Command("pay"))
-async def pay(message: Message):
+async def pay(message: Message, uow: UnitOfWork):
     """Команда для оплаты"""
-
-    await message.answer(
-        text=texts.pay_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
-    )
+    async with uow:
+        subscription = await uow.subscription_repo.get_active_by_user_id(
+            message.from_user.id
+        )
+        if subscription.is_active:
+            await message.answer(text="У вас уже активирована подписка")
+        else:
+            await message.answer(
+                text=texts.pay_text,
+                reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
+            )
 
 
 @router.message(Command("promo"))
