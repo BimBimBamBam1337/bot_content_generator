@@ -51,7 +51,7 @@ class SubscriptionRepository:
             .where(Subscription.user_id == user_id, Subscription.is_active == True)
             .order_by(Subscription.activated_at.desc())
         )
-        return subscription.scalar_one_or_none()
+        return subscription.first()
 
     async def get_total_cost_today(self) -> float:
         today = datetime.now().date()
