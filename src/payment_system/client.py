@@ -15,7 +15,7 @@ payment = Robokassa(
 def create_payment(user_id: int, price: int) -> RobokassaResponse:
     inv_id = random.randint(1, 2147483647)
     response = payment.generate_open_payment_link(
-        out_sum=price, shp_user_id=user_id, inv_id=inv_id
+        out_sum=price, user_id=user_id, inv_id=inv_id
     )
     return response
 

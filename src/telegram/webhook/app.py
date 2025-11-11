@@ -67,7 +67,7 @@ async def robokassa_result(request: Request):
     """
     Обрабатывает ResultURL Robokassa, когда приходит строка запроса.
     """
-    print(request.body())
+    print(await request.body())
     logger.success("Получен ответ от Робокассы!")
 
     body_bytes = await request.body()
