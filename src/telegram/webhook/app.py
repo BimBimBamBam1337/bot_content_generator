@@ -67,7 +67,6 @@ async def robokassa_result(request: Request):
     """
     Обрабатывает ResultURL Robokassa, когда приходит строка запроса.
     """
-    print(await request.body())
     logger.success("Получен ответ от Робокассы!")
 
     body_bytes = await request.body()
@@ -91,7 +90,9 @@ async def robokassa_result(request: Request):
         product_id=Shp_product_id,
     ):
         result = f"OK{InvId}"
-        logger.info(f"Успешная проверка подписи для InvId: {Shp_user_id}")
+        logger.info(
+            f"Успешная проверка подписи для для InvId с user_id: {InvId}:{Shp_user_id}"
+        )
         int_OutSum = int(float(OutSum))
         async with UnitOfWork(SessionFactory) as uow:
             if int_OutSum == 4999:
