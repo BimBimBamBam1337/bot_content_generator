@@ -30,12 +30,11 @@ def calculate_signature(
         base_string = f"{login}:{cost}:{inv_id}:{password}"
 
     additional_params = {
-        "Shp_user_id": user_id,
+        "shp_user_id": user_id,
         "Shp_user_telegram_id": user_telegram_id,
         "Shp_product_id": product_id,
     }
 
-    # Добавляем только непустые параметры
     for key, value in sorted(additional_params.items()):
         if value is not None:
             base_string += f":{key}={value}"
@@ -77,7 +76,7 @@ async def robokassa_result(request: Request):
     OutSum = data.get("OutSum") or data.get("out_summ")
     InvId = data.get("InvId") or data.get("inv_id")
     SignatureValue = data.get("SignatureValue") or data.get("crc")
-    Shp_user_id = data.get("Shp_user_id")
+    Shp_user_id = data.get("shp_user_id")
     Shp_user_telegram_id = data.get("Shp_user_telegram_id")
     Shp_product_id = data.get("Shp_product_id")
 
@@ -91,20 +90,20 @@ async def robokassa_result(request: Request):
         product_id=Shp_product_id,
     ):
         result = f"OK{InvId}"
-        logger.info(f"Успешная проверка подписи для InvId: {InvId}")
+        logger.info(f"Успешная проверка подписи для InvId: {Shp_user_id}")
         int_OutSum = int(float(OutSum))
         async with UnitOfWork(SessionFactory) as uow:
             if int_OutSum == 4999:
                 subscription = await uow.subscription_repo.create(
-                    user_id=int(InvId), cost=int_OutSum, trial=365
+                    user_id=int(Shp_user_id), cost=int_OutSum, trial=365
                 )
                 return
             subscription = await uow.subscription_repo.create(
-                user_id=int(InvId), cost=int_OutSum, trial=30
+                user_id=int(Shp_user_id), cost=int_OutSum, trial=30
             )
             if subscription:
                 await bot.send_message(
-                    chat_id=InvId,
+                    chat_id=Shp_user_id,
                     text="Оплата прошла успешно. У вас активированна подписка",
                 )
     else:

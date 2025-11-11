@@ -1,3 +1,5 @@
+import random
+
 from robokassa import Robokassa
 from robokassa.types import InvoiceType, RobokassaResponse
 from src.config import settings
@@ -11,7 +13,10 @@ payment = Robokassa(
 
 
 def create_payment(user_id: int, price: int) -> RobokassaResponse:
-    response = payment.generate_open_payment_link(out_sum=price, inv_id=user_id)
+    inv_id = random.randint(1, 2147483647)
+    response = payment.generate_open_payment_link(
+        out_sum=price, default_prefix=f"shp_user_id={user_id}"
+    )
     return response
 
 
