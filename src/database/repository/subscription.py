@@ -116,7 +116,7 @@ class SubscriptionRepository:
         )
         return list(subscriptions)
 
-    async def get_active_unique_count(self, days) -> int:
+    async def get_active_unique_count(self, days: int = None) -> int:
         now = datetime.now()
         query = select(func.count(func.distinct(Subscription.user_id)))
 
