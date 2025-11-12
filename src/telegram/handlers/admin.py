@@ -35,10 +35,10 @@ async def admin(call: CallbackQuery, uow: UnitOfWork):
 @router.callback_query(F.data == "with_subscrioption")
 async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork):
     async with uow:
-        subcribed = await uow.subscription_repo.get_active_unique_count()
+        subcribed = await uow.subscription_repo.get_active_unique()
         sum = await uow.subscription_repo.get_total_cost_this_month()
     await call.message.answer(
-        text=texts.with_subscription(subcribed, sum),
+        text=texts.with_subscription(len(subcribed), sum),
         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
     )
 
@@ -48,7 +48,7 @@ async def without_subscrioption(call: CallbackQuery, uow: UnitOfWork):
     async with uow:
         not_subcribed = await uow.subscription_repo.get_users_without_any_subscription()
     await call.message.answer(
-        text=texts.without_subscription(not_subcribed),
+        text=texts.without_subscription(len(not_subcribed)),
         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
     )
 
@@ -68,12 +68,12 @@ async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
 @router.callback_query(F.data == "new_for_week")
 async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
     async with uow:
-        new_users = await uow.subscription_repo.get_active_unique_count(days=7)
+        new_users = await uow.subscription_repo.get_active_unique(days=7)
         new_subcribes = await uow.user_repo.get_total_this_week()
         sum = await uow.subscription_repo.get_total_cost_this_month()
 
     await call.message.answer(
-        text=texts.new_for_week(new_users, new_subcribes, sum),
+        text=texts.new_for_week(len(new_users), new_subcribes, sum),
         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
     )
 
