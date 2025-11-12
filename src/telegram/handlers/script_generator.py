@@ -25,7 +25,7 @@ router = Router()
 
 @router.callback_query(F.data == "assemble_posts_for_layout")
 async def assemble_posts_for_layout(
-    call: CallbackQuery, uow: UnitOfWork, assistant: Optional[AssistantOpenAI] = None
+    call: CallbackQuery, uow: UnitOfWork, assistant: AssistantOpenAI = None
 ):
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
