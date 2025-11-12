@@ -28,7 +28,7 @@ async def subscribe(call: CallbackQuery, uow: UnitOfWork):
         subscription = await uow.subscription_repo.get_active_by_user_id(
             call.from_user.id
         )
-        if subscription.is_active:
+        if subscription.is_active and subscription:
             await call.answer(text="У вас уже активирована подписка")
         else:
             await call.answer(
