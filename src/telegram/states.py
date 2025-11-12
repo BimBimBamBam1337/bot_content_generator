@@ -1,3 +1,4 @@
+from types import LambdaType
 from aiogram.fsm.state import StatesGroup, State
 
 
@@ -23,7 +24,7 @@ class CreatePromoCode(StatesGroup):
     days = State()
 
 
-class ConfirmResponse(SendResponse):
+class ConfirmResponse(StatesGroup):
     telegram = State()
     instagram = State()
     threads = State()
@@ -43,3 +44,10 @@ class GenerateSemantic(StatesGroup):
     confirmed_format = State()
     regenerate_brief = State()
     regenerate_semantic_lines = State()
+
+
+class AdminStatistic(StatesGroup):
+    excpires_3_days = State()
+    without_subscrioption = State()
+    with_subscrioption = State()
+    new_for_week = State()

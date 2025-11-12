@@ -6,9 +6,10 @@ from aiogram.filters import StateFilter
 from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src.excel import Excel
 from src.database.uow import UnitOfWork
 from src.telegram.filters import AdminFilter
-from src.telegram.states import CreatePromoCode
+from src.telegram.states import CreatePromoCode, AdminStatistic
 from src.telegram.keyboards.inline import keyboards_text
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram import texts
@@ -33,28 +34,34 @@ async def admin(call: CallbackQuery, uow: UnitOfWork):
 
 
 @router.callback_query(F.data == "with_subscrioption")
-async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork):
+async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     async with uow:
         subcribed = await uow.subscription_repo.get_active_unique()
         sum = await uow.subscription_repo.get_total_cost_this_month()
+    await state.update_data({"subcribes": subcribed})
     await call.message.answer(
         text=texts.with_subscription(len(subcribed), sum),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
+    await state.set_state(AdminStatistic.with_subscrioption)
 
 
 @router.callback_query(F.data == "without_subscrioption")
-async def without_subscrioption(call: CallbackQuery, uow: UnitOfWork):
+async def without_subscrioption(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext
+):
     async with uow:
         not_subcribed = await uow.subscription_repo.get_users_without_any_subscription()
     await call.message.answer(
         text=texts.without_subscription(len(not_subcribed)),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
+    await state.update_data({"users": not_subcribed})
+    await state.set_state(AdminStatistic.without_subscrioption)
 
 
 @router.callback_query(F.data == "excpires_3_days")
-async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
+async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     async with uow:
         subscription_excpires_3_days = await uow.subscription_repo.get_expiring_in_days(
             3
@@ -63,27 +70,74 @@ async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
         text=texts.excpires_3_days(len(subscription_excpires_3_days)),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
+    await state.set_state(AdminStatistic.excpires_3_days)
 
 
 @router.callback_query(F.data == "new_for_week")
-async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
+async def new_for_week(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     async with uow:
         new_users = await uow.user_repo.get_total_by_days()
         new_subcribes = await uow.subscription_repo.get_active_unique(days=7)
         sum = await uow.subscription_repo.get_total_cost_this_month()
-
+    await state.update_data({"users": new_users, "subcribes": new_subcribes})
     await call.message.answer(
         text=texts.new_for_week(len(new_users), len(new_subcribes), sum),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
+    await state.set_state(AdminStatistic.new_for_week)
 
 
-@router.callback_query(F.data.in_(["users", "back_to_users"]))
-async def users(call: CallbackQuery, uow: UnitOfWork):
-    await call.message.answer(
-        text=texts.users_info_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
-    )
+@router.callback_query(
+    F.data == "excel",
+    StateFilter(
+        AdminStatistic.with_subscrioption,
+        AdminStatistic.without_subscrioption,
+        AdminStatistic.excpires_3_days,
+        AdminStatistic.new_for_week,
+    ),
+)
+async def create_excel(
+    bot: Bot, call: CallbackQuery, uow: UnitOfWork, state: FSMContext
+):
+    data = await state.get_data()
+    excel = Excel()
+    current_state = await state.get_state()
+
+    async with uow:
+        if current_state == AdminStatistic.with_subscrioption.state:
+            # Пользователи с активной подпиской
+            users = [sub.user for sub in data["subcribes"]]
+            subscriptions = data["subcribes"]
+            excel.create_df(users, subscriptions)
+            file_path = "with_subscription.xlsx"
+
+        elif current_state == AdminStatistic.without_subscrioption.state:
+            # Пользователи без подписки
+            users = data["users"]
+            excel.create_df(users, [])
+            file_path = "without_subscription.xlsx"
+
+        elif current_state == AdminStatistic.excpires_3_days.state:
+            # Подписки, истекающие через 3 дня
+            subscriptions = await uow.subscription_repo.get_expiring_in_days(3)
+            users = [sub.user for sub in subscriptions]
+            excel.create_df(users, subscriptions)
+            file_path = "expires_3_days.xlsx"
+
+        elif current_state == AdminStatistic.new_for_week.state:
+            # Новые за неделю
+            users = data["users"]
+            subscriptions = data["subcribes"]
+            excel.create_df(users, subscriptions)
+            file_path = "new_for_week.xlsx"
+
+        else:
+            await call.answer("Не удалось определить состояние", show_alert=True)
+            return
+
+    excel.save(file_path)
+    await bot.send_document(chat_id=call.from_user.id, document=FSInputFile(file_path))
+    await state.clear()
 
 
 @router.callback_query(F.data == "payments")
