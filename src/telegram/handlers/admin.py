@@ -153,6 +153,14 @@ async def payments(call: CallbackQuery, uow: UnitOfWork):
     )
 
 
+@router.callback_query(F.data.in_(["users", "back_to_users"]))
+async def users(call: CallbackQuery, uow: UnitOfWork):
+    await call.message.answer(
+        text=texts.users_info_text,
+        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+    )
+
+
 @router.callback_query(F.data == "add_promo_code")
 async def add_promo_code(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
     await call.message.answer(
