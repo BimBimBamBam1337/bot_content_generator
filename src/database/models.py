@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
-from sqlalchemy import Float, ForeignKey, String, Integer, Boolean, DateTime, JSON
+from sqlalchemy.sql import expression
+from sqlalchemy import Float, ForeignKey, String, Integer, Boolean, DateTime, JSON, func
 from sqlalchemy.ext.mutable import MutableDict
 
 Base = declarative_base()
@@ -24,7 +25,7 @@ class User(Base):
 
     language_code: Mapped[str] = mapped_column(String, nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_owner: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_owner: Mapped[bool] = mapped_column(Boolean, server_default=expression.false())
     username: Mapped[str] = mapped_column(String(255), nullable=True)
     user = relationship("User", back_populates="subscriptions")
 
