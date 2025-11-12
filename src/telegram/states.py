@@ -29,6 +29,7 @@ class ConfirmResponse(StatesGroup):
     instagram = State()
     threads = State()
     article = State()
+    reels = State()
 
 
 class GenerateSemantic(StatesGroup):
