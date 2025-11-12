@@ -96,12 +96,16 @@ admin_buttons = {
     "1": ["💰 Платежи", "payments"],
     "2": ["Добавить промо код", "add_promo_code"],
 }
+statistic_buttons = {
+    "0": ["Экспрот списка", "excel"],
+    "1": ["Назад", "back_to_users"],
+}
 users_info_buttons = {
     "0": ["✅ С подпиской", "with_subscrioption"],
     "1": ["❌ без подписки", "without_subscrioption"],
     "2": ["📅 Истекает через 3 дня", "excpires_3_days"],
     "3": ["🆕 Новые за неделю", "new_for_week"],
-    "3": ["⬅️ Назад", "back_to_users"],
+    "4": ["⬅️ Назад", "back_to_admin"],
 }
 
 bact_to_admin_buttons = {

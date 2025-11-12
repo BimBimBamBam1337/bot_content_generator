@@ -39,7 +39,7 @@ async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork):
         sum = await uow.subscription_repo.get_total_cost_this_month()
     await call.message.answer(
         text=texts.with_subscription(len(subcribed), sum),
-        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+        reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
 
 
@@ -49,7 +49,7 @@ async def without_subscrioption(call: CallbackQuery, uow: UnitOfWork):
         not_subcribed = await uow.subscription_repo.get_users_without_any_subscription()
     await call.message.answer(
         text=texts.without_subscription(len(not_subcribed)),
-        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+        reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
 
 
@@ -61,7 +61,7 @@ async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
         )
     await call.message.answer(
         text=texts.excpires_3_days(len(subscription_excpires_3_days)),
-        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+        reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
 
 
@@ -74,11 +74,11 @@ async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
 
     await call.message.answer(
         text=texts.new_for_week(len(new_users), new_subcribes, sum),
-        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+        reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
 
 
-@router.callback_query(F.data == "users")
+@router.callback_query(F.data.in_(["users", "back_to_users"]))
 async def users(call: CallbackQuery, uow: UnitOfWork):
     await call.message.answer(
         text=texts.users_info_text,
