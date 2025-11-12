@@ -117,47 +117,20 @@ class SubscriptionRepository:
         )
         return list(subscriptions)
 
-    # async def get_active_unique(self, days: int | None = None) -> list[Subscription]:
-    #     now = datetime.now()
-    #     query = (
-    #         select(Subscription)
-    #         .options(joinedload(Subscription.user))
-    #         .order_by(Subscription.user_id, Subscription.activated_at.desc())
-    #     )
-    #
-    #     if days is not None:
-    #         start_date = now - timedelta(days=days)
-    #         query = query.where(
-    #             and_(
-    #                 Subscription.activated_at >= start_date,
-    #                 Subscription.activated_at <= now,
-    #             )
-    #         )
-    #     else:
-    #         query = query.where(Subscription.expires_at > now)
-    #
-    #     result = await self.session.scalars(query)
-    #     subscriptions = list(result.all())
-    #
-    #     # оставить только последние подписки для каждого пользователя
-    #     unique_subs = {}
-    #     for sub in subscriptions:
-    #         if sub.user_id not in unique_subs:
-    #             unique_subs[sub.user_id] = sub
-    #
-    #     return list(unique_subs.values())
-
-    async def get_active_unique(self, days: int = None) -> list[Subscription]:
-
+    async def get_active_unique(self, days: int | None = None) -> list[Subscription]:
         now = datetime.now()
-        query = select(Subscription)
+        query = (
+            select(Subscription)
+            .options(joinedload(Subscription.user))
+            .order_by(Subscription.user_id, Subscription.activated_at.desc())
+        )
 
         if days is not None:
             start_date = now - timedelta(days=days)
             query = query.where(
                 and_(
+                    Subscription.activated_at >= start_date,
                     Subscription.activated_at <= now,
-                    Subscription.expires_at >= start_date,
                 )
             )
         else:
@@ -165,7 +138,34 @@ class SubscriptionRepository:
 
         result = await self.session.scalars(query)
         subscriptions = list(result.all())
-        return subscriptions
+
+        # оставить только последние подписки для каждого пользователя
+        unique_subs = {}
+        for sub in subscriptions:
+            if sub.user_id not in unique_subs:
+                unique_subs[sub.user_id] = sub
+
+        return list(unique_subs.values())
+
+    # async def get_active_unique(self, days: int = None) -> list[Subscription]:
+    #
+    #     now = datetime.now()
+    #     query = select(Subscription)
+    #
+    #     if days is not None:
+    #         start_date = now - timedelta(days=days)
+    #         query = query.where(
+    #             and_(
+    #                 Subscription.activated_at <= now,
+    #                 Subscription.expires_at >= start_date,
+    #             )
+    #         )
+    #     else:
+    #         query = query.where(Subscription.expires_at > now)
+    #
+    #     result = await self.session.scalars(query)
+    #     subscriptions = list(result.all())
+    #     return subscriptions
 
     async def get_users_without_or_expired_subscription(self) -> list[int]:
         now = datetime.now()
