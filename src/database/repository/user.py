@@ -46,15 +46,19 @@ class UserRepository:
         )
         await self.session.flush()
 
-    async def get_total_this_week(self) -> int:
-        now = datetime.now()
-        start_of_week = now - timedelta(days=now.weekday())
-        end_of_week = start_of_week + timedelta(days=7)
+    async def get_total_by_days(self, days: int = None) -> list[User]:
+        if days is None:
+            total = await self.session.scalars(select(User))
+        else:
+            now = datetime.now()
+            start_of_week = now - timedelta(days=now.weekday())
+            end_of_week = start_of_week + timedelta(days=days)
 
-        total = await self.session.scalars(
-            select(func.count(User)).where(
-                User.created_at >= start_of_week,
-                User.created_at < end_of_week,
+            total = await self.session.scalars(
+                select(User).where(
+                    User.created_at >= start_of_week,
+                    User.created_at < end_of_week,
+                )
             )
-        )
-        return total if total else 0
+
+        return list(total.all())
