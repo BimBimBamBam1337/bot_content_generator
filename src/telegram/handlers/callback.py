@@ -28,10 +28,10 @@ async def subscribe(call: CallbackQuery, uow: UnitOfWork):
         subscription = await uow.subscription_repo.get_active_by_user_id(
             call.from_user.id
         )
-        if subscription.is_active and subscription:
-            await call.answer(text="У вас уже активирована подписка")
+        if subscription and subscription.is_active:
+            await call.message.answer(text="У вас уже активирована подписка")
         else:
-            await call.answer(
+            await call.message.answer(
                 text=texts.pay_text,
                 reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
             )
