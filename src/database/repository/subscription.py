@@ -116,9 +116,10 @@ class SubscriptionRepository:
         )
         return list(subscriptions)
 
-    async def get_active_unique(self, days: int = None) -> list[User]:
+    async def get_active_unique(self, days: int = None) -> list[Subscription]:
+
         now = datetime.now()
-        query = select(func.distinct(Subscription))
+        query = select(Subscription)
 
         if days is not None:
             start_date = now - timedelta(days=days)
@@ -132,8 +133,8 @@ class SubscriptionRepository:
             query = query.where(Subscription.expires_at > now)
 
         result = await self.session.scalars(query)
-        users = list(result.all())
-        return users
+        subscriptions = list(result.all())
+        return subscriptions
 
     async def get_users_without_or_expired_subscription(self) -> list[int]:
         now = datetime.now()
