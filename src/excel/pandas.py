@@ -1,6 +1,5 @@
 import pandas as pd
 
-from datetime import datetime
 from src.database.models import User, Subscription
 
 

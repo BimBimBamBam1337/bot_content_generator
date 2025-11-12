@@ -305,16 +305,15 @@ def with_subscription(subscribed: int, sum: float):
     """
 
 
-def without_subscription(subscribed: int, sum: float):
+def without_subscription(subscribed: int):
     return f"""
 👥 ПОЛЬЗОВАТЕЛИ БЕЗ ПОДПИСКОЙ 📊 
 Статистика категории: 
 • Всего: {subscribed}
-• Месячная выручка: {sum}₽
     """
 
 
-def excpires_3_days(subscribed: int, sum: float):
+def excpires_3_days(subscribed: int):
     return f"""
 👥 ПОДПИСКА ИСТЕКАЕТ ЧЕРЕЗ 3 ДНЯ  
 Статистика категории: 

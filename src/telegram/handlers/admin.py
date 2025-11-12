@@ -32,37 +32,50 @@ async def admin(call: CallbackQuery, uow: UnitOfWork):
     )
 
 
-# @router.callback_query(F.data == "with_subscrioption")
-# async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork):
-#     await call.message.answer(
-#         text=texts.with_subscription,
-#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
-#     )
-#
-#
-# @router.callback_query(F.data == "without_subscrioption")
-# async def without_subscrioption(call: CallbackQuery, uow: UnitOfWork):
-#     await call.message.answer(
-#         text=texts.without_subscription,
-#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
-#     )
-#
-#
-# @router.callback_query(F.data == "excpires_3_days")
-# async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
-#     await call.message.answer(
-#         text=texts.excpires_3_days,
-#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
-#     )
-#
-#
-# @router.callback_query(F.data == "new_for_week")
-# async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
-#     await call.message.answer(
-#         text=texts.new_for_week,
-#         reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
-#     )
-#
+@router.callback_query(F.data == "with_subscrioption")
+async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork):
+    async with uow:
+        subcribed = await uow.subscription_repo.get_active_unique_count()
+        sum = await uow.subscription_repo.get_total_cost_this_month()
+    await call.message.answer(
+        text=texts.with_subscription(subcribed, sum),
+        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+    )
+
+
+@router.callback_query(F.data == "without_subscrioption")
+async def without_subscrioption(call: CallbackQuery, uow: UnitOfWork):
+    async with uow:
+        not_subcribed = await uow.subscription_repo.get_users_without_any_subscription()
+    await call.message.answer(
+        text=texts.without_subscription(not_subcribed),
+        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+    )
+
+
+@router.callback_query(F.data == "excpires_3_days")
+async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
+    async with uow:
+        subscription_excpires_3_days = await uow.subscription_repo.get_expiring_in_days(
+            3
+        )
+    await call.message.answer(
+        text=texts.excpires_3_days(len(subscription_excpires_3_days)),
+        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+    )
+
+
+@router.callback_query(F.data == "new_for_week")
+async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
+    async with uow:
+        new_users = await uow.subscription_repo.get_active_unique_count(days=7)
+        new_subcribes = await uow.user_repo.get_total_this_week()
+        sum = await uow.subscription_repo.get_total_cost_this_month()
+
+    await call.message.answer(
+        text=texts.new_for_week(new_users, new_subcribes, sum),
+        reply_markup=create_vertical_keyboard(keyboards_text.users_info_buttons),
+    )
 
 
 @router.callback_query(F.data == "users")

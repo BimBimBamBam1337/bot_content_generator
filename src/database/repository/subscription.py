@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import delete, select, update, func
+from sqlalchemy import delete, select, update, func, and_
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from src.database.models import Subscription, User
@@ -116,13 +116,22 @@ class SubscriptionRepository:
         )
         return list(subscriptions)
 
-    async def get_active_unique_count(self) -> int:
+    async def get_active_unique_count(self, days) -> int:
         now = datetime.now()
-        count = await self.session.scalar(
-            select(func.count(func.distinct(Subscription.user_id))).where(
-                Subscription.expires_at > now
+        query = select(func.count(func.distinct(Subscription.user_id)))
+
+        if days is not None:
+            start_date = now - timedelta(days=days)
+            query = query.where(
+                and_(
+                    Subscription.activated_at <= now,
+                    Subscription.expires_at >= start_date,
+                )
             )
-        )
+        else:
+            query = query.where(Subscription.expires_at > now)
+
+        count = await self.session.scalar(query)
         return int(count) if count else 0
 
     async def get_users_without_or_expired_subscription(self) -> list[int]:
@@ -147,6 +156,11 @@ class SubscriptionRepository:
         )
         return float(total) if total else 0.0
 
+    async def get_total_cost(self) -> float:
+
+        total = await self.session.scalar(select(func.sum(Subscription.cost)))
+        return float(total) if total else 0.0
+
     async def get_list_actvated_at(self, user_id: int) -> list[datetime]:
 
         total = await self.session.scalars(
@@ -155,3 +169,14 @@ class SubscriptionRepository:
             )
         )
         return list(total.all())
+
+    async def get_users_without_any_subscription(self) -> list[User]:
+        query = (
+            select(User)
+            .outerjoin(Subscription, User.id == Subscription.user_id)
+            .where(Subscription.id.is_(None))
+        )
+
+        result = await self.session.scalars(query)
+        users = list(result.unique().all())
+        return users

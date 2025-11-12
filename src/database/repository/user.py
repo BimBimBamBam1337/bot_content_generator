@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import delete, select, update, func
 from sqlalchemy.ext.asyncio.session import AsyncSession
+
 
 from src.database.models import User
 
@@ -44,3 +45,16 @@ class UserRepository:
             update(User).where(User.id == user_id).values(**kwargs)
         )
         await self.session.flush()
+
+    async def get_total_this_week(self) -> int:
+        now = datetime.now()
+        start_of_week = now - timedelta(days=now.weekday())
+        end_of_week = start_of_week + timedelta(days=7)
+
+        total = await self.session.scalars(
+            select(func.count(User)).where(
+                User.created_at >= start_of_week,
+                User.created_at < end_of_week,
+            )
+        )
+        return total if total else 0

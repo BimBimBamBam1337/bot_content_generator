@@ -17,6 +17,15 @@ class AdminFilter(BaseFilter):
             return False
 
 
+class OwnerFilter(BaseFilter):
+    async def __call__(self, event: TelegramObject, uow: UnitOfWork) -> bool:
+        async with uow:
+            user = await uow.user_repo.get(event.from_user.id)
+            if user.is_owner:
+                return True
+            return False
+
+
 class SubscriptionExpiredFilter(BaseFilter):
     async def __call__(
         self, message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext
