@@ -30,6 +30,7 @@ async def startup():
     dp.include_routers(*routers)
 
     await setup_bot_commands()
+    logger.info(f"Bot started: {await bot.get_me()}")
     asyncio.create_task(dp.start_polling(bot))
 
 
