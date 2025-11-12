@@ -5,13 +5,13 @@ from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from src.telegram.filters import SubscriptionExpiredFilter
-from src.telegram.filters import AdminFilter
+from src.telegram.filters import SubscriptionExpiredFilter, AdminFilter
 from src.database.uow import UnitOfWork
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
 from src.constants import PHOTOS_DIR
+from src.telegram.states import Promo
 
 router = Router()
 
@@ -56,27 +56,13 @@ async def pay(message: Message, uow: UnitOfWork):
 
 
 @router.message(Command("promo"))
-async def promo(message: Message, uow: UnitOfWork):
+async def promo(message: Message, uow: UnitOfWork, state: FSMContext):
     """Команда для активации промо"""
-    async with uow:
-        user = await uow.user_repo.get(message.from_user.id)
-        promo = await uow.promo_code_repo.get(message.text)
 
-        if not promo:
-            await message.answer(
-                text=texts.not_right_promocode_text,
-                reply_markup=create_vertical_keyboard(keyboards_text.go_back_to_menu),
-            )
-            return
-
-        if message.text in user.used_promo_codes:
-            await message.answer("Ты уже использовал этот промокод")
-            return
-
-        await uow.user_repo.add_promo_code(user, message.text)
     await message.answer(
         text=texts.promo_text,
     )
+    await state.set_state(Promo.got_code)
 
 
 @router.message(Command("language"))
