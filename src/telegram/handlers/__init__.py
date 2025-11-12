@@ -6,6 +6,7 @@ from .voice import router as voice_router
 from .script_generator import router as script_generator_router
 from .payment import router as payment_router
 from .admin import router as admin_router
+from .owner import router as owner_router
 
 routers = [
     comand_router,
@@ -15,4 +16,5 @@ routers = [
     script_generator_router,
     payment_router,
     admin_router,
+    owner_router,
 ]
