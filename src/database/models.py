@@ -29,7 +29,9 @@ class User(Base):
         Boolean, nullable=False, server_default=expression.false()
     )
     username: Mapped[str] = mapped_column(String(255), nullable=True)
-    user = relationship("User", back_populates="subscriptions")
+    subscriptions = relationship(
+        "Subscription", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class PromoCode(Base):
@@ -58,6 +60,5 @@ class Subscription(Base):
     activated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     expires_at: Mapped[datetime] = mapped_column(DateTime)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    subscriptions = relationship(
-        "Subscription", back_populates="user", cascade="all, delete-orphan"
-    )
+
+    user = relationship("User", back_populates="subscriptions")
