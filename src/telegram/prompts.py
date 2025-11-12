@@ -93,4 +93,6 @@ def regenerate_response_prompt(topic: str) -> str:
 def prompt_text(post_type: str, text: str | None) -> str:
     return f"""
 Создай {post_type} пост на основе следующего текста: {text}
-    """
+
+Пожалуйста, оформи ответ в виде готового поста с использованием смайликов и хештегов, разбив текст на логические абзацы для легкого чтения.
+"""
