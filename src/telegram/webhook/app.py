@@ -9,7 +9,7 @@ from loguru import logger
 from src.database.engine import SessionFactory
 from src.config import bot, dp, settings
 from src.database.uow import UnitOfWork
-from aiogram.types import Update
+from src.telegram import texts
 
 app = FastAPI()
 
@@ -107,6 +107,10 @@ async def robokassa_result(request: Request):
                 await bot.send_message(
                     chat_id=Shp_user_id,
                     text="Оплата прошла успешно. У вас активированна подписка",
+                )
+                await bot.send_message(
+                    chat_id=Shp_user_id,
+                    text=texts.help_text,
                 )
     else:
         result = "bad sign"
