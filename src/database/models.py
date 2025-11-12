@@ -25,7 +25,9 @@ class User(Base):
 
     language_code: Mapped[str] = mapped_column(String, nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_owner: Mapped[bool] = mapped_column(Boolean, server_default=expression.false())
+    is_owner: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=expression.false()
+    )
     username: Mapped[str] = mapped_column(String(255), nullable=True)
     user = relationship("User", back_populates="subscriptions")
 
