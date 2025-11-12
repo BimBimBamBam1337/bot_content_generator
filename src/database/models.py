@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 from sqlalchemy import Float, ForeignKey, String, Integer, Boolean, DateTime, JSON
 from sqlalchemy.ext.mutable import MutableDict
 
@@ -26,6 +26,7 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_owner: Mapped[bool] = mapped_column(Boolean, default=False)
     username: Mapped[str] = mapped_column(String(255), nullable=True)
+    user = relationship("User", back_populates="subscriptions")
 
 
 class PromoCode(Base):
@@ -54,3 +55,6 @@ class Subscription(Base):
     activated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     expires_at: Mapped[datetime] = mapped_column(DateTime)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    subscriptions = relationship(
+        "Subscription", back_populates="user", cascade="all, delete-orphan"
+    )
