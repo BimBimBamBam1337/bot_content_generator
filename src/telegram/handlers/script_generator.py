@@ -25,10 +25,17 @@ router = Router()
 
 @router.callback_query(F.data == "assemble_posts_for_layout")
 async def assemble_posts_for_layout(
-    call: CallbackQuery, uow: UnitOfWork, assistant: AssistantOpenAI
+    call: CallbackQuery, uow: UnitOfWork, assistant: Optional[AssistantOpenAI] = None
 ):
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
+
+        # Если assistant не передан, создаем его
+        if assistant is None:
+            assistant = AssistantOpenAI(
+                settings.openai_key, settings.semantic_layout_generator
+            )
+
         if user.thread_id:
             await uow.user_repo.update_user(
                 call.from_user.id, assistant_id=settings.semantic_layout_generator
@@ -40,6 +47,7 @@ async def assemble_posts_for_layout(
                 thread_id=thread_id,
                 assistant_id=settings.semantic_layout_generator,
             )
+
     await call.message.answer(
         text=texts.assemble_posts_for_layout_text,
         reply_markup=create_vertical_keyboard(keyboards_text.begin_breaf_buttons),
