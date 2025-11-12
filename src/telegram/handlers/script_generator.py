@@ -41,10 +41,10 @@ async def assemble_posts_for_layout(
                 call.from_user.id, assistant_id=settings.semantic_layout_generator
             )
         else:
-            thread_id = await assistant.create_thread()
+            thread = await assistant.create_thread()
             await uow.user_repo.update_user(
                 call.from_user.id,
-                thread_id=thread_id,
+                thread_id=thread.id,
                 assistant_id=settings.semantic_layout_generator,
             )
 
