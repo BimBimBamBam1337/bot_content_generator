@@ -12,7 +12,7 @@ class AdminFilter(BaseFilter):
     async def __call__(self, event: TelegramObject, uow: UnitOfWork) -> bool:
         async with uow:
             user = await uow.user_repo.get(event.from_user.id)
-            if user.is_admin:
+            if user.is_admin or user.is_owner:
                 return True
             return False
 
