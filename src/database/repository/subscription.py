@@ -133,7 +133,7 @@ class SubscriptionRepository:
 
         result = await self.session.scalars(query)
         users = list(result.all())
-        return user
+        return users
 
     async def get_users_without_or_expired_subscription(self) -> list[int]:
         now = datetime.now()
