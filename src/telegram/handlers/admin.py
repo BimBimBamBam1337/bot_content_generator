@@ -68,8 +68,8 @@ async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
 @router.callback_query(F.data == "new_for_week")
 async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
     async with uow:
-        new_users = await uow.subscription_repo.get_active_unique(days=7)
-        new_subcribes = await uow.user_repo.get_total_by_days()
+        new_users = await uow.user_repo.get_total_by_days()
+        new_subcribes = await uow.subscription_repo.get_active_unique(days=7)
         sum = await uow.subscription_repo.get_total_cost_this_month()
 
     await call.message.answer(
