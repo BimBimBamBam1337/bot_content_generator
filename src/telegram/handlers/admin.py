@@ -69,11 +69,11 @@ async def excpires_3_days(call: CallbackQuery, uow: UnitOfWork):
 async def new_for_week(call: CallbackQuery, uow: UnitOfWork):
     async with uow:
         new_users = await uow.subscription_repo.get_active_unique(days=7)
-        new_subcribes = await uow.user_repo.get_total_this_week()
+        new_subcribes = await uow.user_repo.get_total_by_days()
         sum = await uow.subscription_repo.get_total_cost_this_month()
 
     await call.message.answer(
-        text=texts.new_for_week(len(new_users), new_subcribes, sum),
+        text=texts.new_for_week(len(new_users), len(new_subcribes), sum),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
 
