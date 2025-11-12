@@ -38,7 +38,6 @@ async def with_subscrioption(call: CallbackQuery, uow: UnitOfWork, state: FSMCon
     async with uow:
         subcribed = await uow.subscription_repo.get_active_unique()
         sum = await uow.subscription_repo.get_total_cost_this_month()
-    await state.update_data({"subcribes": subcribed})
     await call.message.answer(
         text=texts.with_subscription(len(subcribed), sum),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
@@ -56,7 +55,6 @@ async def without_subscrioption(
         text=texts.without_subscription(len(not_subcribed)),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
     )
-    await state.update_data({"users": not_subcribed})
     await state.set_state(AdminStatistic.without_subscrioption)
 
 
@@ -79,7 +77,6 @@ async def new_for_week(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
         new_users = await uow.user_repo.get_total_by_days()
         new_subcribes = await uow.subscription_repo.get_active_unique(days=7)
         sum = await uow.subscription_repo.get_total_cost_this_month()
-    await state.update_data({"users": new_users, "subcribes": new_subcribes})
     await call.message.answer(
         text=texts.new_for_week(len(new_users), len(new_subcribes), sum),
         reply_markup=create_vertical_keyboard(keyboards_text.statistic_buttons),
@@ -99,44 +96,39 @@ async def new_for_week(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
 async def create_excel(
     bot: Bot, call: CallbackQuery, uow: UnitOfWork, state: FSMContext
 ):
-    data = await state.get_data()
     excel = Excel()
     current_state = await state.get_state()
 
     async with uow:
         if current_state == AdminStatistic.with_subscrioption.state:
-            # Пользователи с активной подпиской
-            users = [sub.user for sub in data["subcribes"]]
-            subscriptions = data["subcribes"]
+            subscriptions = await uow.subscription_repo.get_active_unique()
+            users = [s.user for s in subscriptions]
             excel.create_df(users, subscriptions)
-            file_path = "with_subscription.xlsx"
+            filename = "with_subscription.xlsx"
 
         elif current_state == AdminStatistic.without_subscrioption.state:
-            # Пользователи без подписки
-            users = data["users"]
+            users = await uow.subscription_repo.get_users_without_any_subscription()
             excel.create_df(users, [])
-            file_path = "without_subscription.xlsx"
+            filename = "without_subscription.xlsx"
 
         elif current_state == AdminStatistic.excpires_3_days.state:
-            # Подписки, истекающие через 3 дня
-            subscriptions = await uow.subscription_repo.get_expiring_in_days(3)
-            users = [sub.user for sub in subscriptions]
+            subscriptions = await uow.subscription_repo.get_expiring_in_days(days=3)
+            users = [s.user for s in subscriptions]
             excel.create_df(users, subscriptions)
-            file_path = "expires_3_days.xlsx"
+            filename = "expires_3_days.xlsx"
 
         elif current_state == AdminStatistic.new_for_week.state:
-            # Новые за неделю
-            users = data["users"]
-            subscriptions = data["subcribes"]
+            users = await uow.user_repo.get_total_by_days()
+            subscriptions = await uow.subscription_repo.get_active_unique(days=7)
             excel.create_df(users, subscriptions)
-            file_path = "new_for_week.xlsx"
+            filename = "new_for_week.xlsx"
 
         else:
             await call.answer("Не удалось определить состояние", show_alert=True)
             return
 
-    excel.save(file_path)
-    await bot.send_document(chat_id=call.from_user.id, document=FSInputFile(file_path))
+    excel.save(filename)
+    await bot.send_document(chat_id=call.from_user.id, document=FSInputFile(filename))
     await state.clear()
 
 
