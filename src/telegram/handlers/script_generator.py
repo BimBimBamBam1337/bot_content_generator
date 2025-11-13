@@ -361,10 +361,10 @@ async def regenerate_layout(
     assistant: AssistantOpenAI,
 ):
     await call.message.answer(text=texts.regenerate_layout_text)
-    await state.set_state(GenerateSemantic.regenerate_brief)
+    await state.set_state(GenerateSemantic.regenerate_layout)
 
 
-@router.message(F.text, GenerateSemantic.regenerate_brief)
+@router.message(F.text, GenerateSemantic.regenerate_layout)
 async def got_regenerate_layout(
     message: Message,
     uow: UnitOfWork,
