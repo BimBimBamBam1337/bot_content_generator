@@ -360,7 +360,7 @@ async def regenerate_layout(
     bot: Bot,
     assistant: AssistantOpenAI,
 ):
-    call.message.answer(text=texts.regenerate_layout_text)
+    await call.message.answer(text=texts.regenerate_layout_text)
     await state.set_state(GenerateSemantic.regenerate_brief)
 
 
