@@ -397,13 +397,14 @@ async def got_regenerate_layout(
 async def confirm_layout(
     call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
 ):
+
+    await call.message.answer(
+        text=texts.final_semantic_layout_text,
+    )
+    await state.clear()
     async with uow:
         user = await uow.user_repo.get(call.from_user.id)
         if user.thread_id:
             await assistant.delete_thread(user.thread_id)
         thread = await assistant.create_thread()
         await uow.user_repo.update_user(call.from_user.id, thread_id=thread.id)
-    await call.message.answer(
-        text=texts.final_semantic_layout_text,
-    )
-    await state.set_state(Chat.send_message)
