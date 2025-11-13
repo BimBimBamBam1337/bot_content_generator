@@ -75,8 +75,8 @@ layout_prompt = """
 """
 
 
-def regenerate_response_prompt(topic: str) -> str:
-    return f"""
+def regenerate_response_prompt(topic: str, corrections: str = "") -> str:
+    base_prompt = f"""
 Пересобери **12 пунктов контент-плана** по теме: **{topic}**.
 
 Каждый пункт должен иметь формат:
@@ -88,6 +88,13 @@ def regenerate_response_prompt(topic: str) -> str:
 Сделай текст лаконичным, современным и логичным.  
 Выводи ровно 12 пунктов подряд, без деления на линии или циклы, без каких-либо пояснений.
 """
+
+    if corrections.strip():
+        base_prompt += (
+            f"\n\nУчти следующие правки при пересборке:\n{corrections.strip()}"
+        )
+
+    return base_prompt
 
 
 def prompt_text(post_type: str, text: str | None) -> str:

@@ -177,7 +177,9 @@ regenerate_semantic_lines_text = """
 
 и что именно исправить?
 """
-
+regenerate_layout_text = """
+Напиши какой пункт исправить и что именно исправить 
+"""
 promo_text = """
 Введите промокод.
 """

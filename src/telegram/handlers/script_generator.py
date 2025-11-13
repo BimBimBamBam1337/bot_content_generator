@@ -360,20 +360,33 @@ async def regenerate_layout(
     bot: Bot,
     assistant: AssistantOpenAI,
 ):
-    msg_to_delete = await call.message.answer("Пересобираю раскладку...")
+    call.message.answer(text=texts.regenerate_layout_text)
+    await state.set_state(GenerateSemantic.regenerate_brief)
+
+
+@router.message(F.text, GenerateSemantic.regenerate_brief)
+async def got_regenerate_layout(
+    message: Message,
+    uow: UnitOfWork,
+    state: FSMContext,
+    bot: Bot,
+    assistant: AssistantOpenAI,
+):
+    msg_to_delete = await message.answer("Пересобираю раскладку...")
     layout = await state.get_data()
     async with uow:
-        user = await uow.user_repo.get(call.from_user.id)
+        user = await uow.user_repo.get(message.from_user.id)
     response = await generate_response(
         user,
-        prompts.regenerate_response_prompt(layout.get("layout_prompt")),
+        prompts.regenerate_response_prompt(layout.get("layout_prompt"), message.text),
         assistant,
     )
     await state.update_data({"layout_prompt": response})
     await bot.delete_message(
-        chat_id=call.message.chat.id, message_id=msg_to_delete.message_id
+        chat_id=message.chat.id, message_id=msg_to_delete.message_id
     )
-    await call.message.answer(
+
+    await message.answer(
         text=escape_markdown_v2(texts.short_brief_text(response)),
         reply_markup=create_vertical_keyboard(keyboards_text.confirm_layout_buttons),
         parse_mode="MarkdownV2",
@@ -381,8 +394,15 @@ async def regenerate_layout(
 
 
 @router.callback_query(F.data == "confirm_layout")
-async def confirm_layout(call: CallbackQuery, uow: UnitOfWork, state: FSMContext):
-
+async def confirm_layout(
+    call: CallbackQuery, uow: UnitOfWork, state: FSMContext, assistant: AssistantOpenAI
+):
+    async with uow:
+        user = await uow.user_repo.get(call.from_user.id)
+        if user.thread_id:
+            await assistant.delete_thread(user.thread_id)
+        thread = await assistant.create_thread()
+        await uow.user_repo.update_user(call.from_user.id, thread_id=thread.id)
     await call.message.answer(
         text=texts.final_semantic_layout_text,
     )

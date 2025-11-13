@@ -45,6 +45,7 @@ class GenerateSemantic(StatesGroup):
     confirmed_format = State()
     regenerate_brief = State()
     regenerate_semantic_lines = State()
+    regenerate_layout = State()
 
 
 class AdminStatistic(StatesGroup):
