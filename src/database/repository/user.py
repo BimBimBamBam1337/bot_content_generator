@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from sqlalchemy import delete, select, update, func
 from sqlalchemy.ext.asyncio.session import AsyncSession
@@ -46,7 +46,16 @@ class UserRepository:
         )
         await self.session.flush()
 
-    async def get_total_by_days(self, days: int = None) -> list[User]:
+    async def get_users_today(self) -> list[User] | None:
+        result = await self.session.execute(
+            select(func.count(User.id)).where(
+                func.DATE(User.created_at) == date.today()
+            )
+        )
+        users = result.scalars().all()
+        return list(users)
+
+    async def get_total_by_days(self, days: int | None = None) -> list[User]:
         if days is None:
             total = await self.session.scalars(select(User))
         else:
