@@ -1,3 +1,4 @@
+from types import LambdaType
 from aiogram.fsm.state import StatesGroup, State
 
 
@@ -7,3 +8,48 @@ class Promo(StatesGroup):
 
 class Chat(StatesGroup):
     send_message = State()
+
+
+class SendResponse(StatesGroup):
+    prepare_reels = State()
+    reels = State()
+    telegram = State()
+    instagram = State()
+    threads = State()
+    article = State()
+
+
+class CreatePromoCode(StatesGroup):
+    name = State()
+    days = State()
+
+
+class ConfirmResponse(StatesGroup):
+    telegram = State()
+    instagram = State()
+    threads = State()
+    article = State()
+    reels = State()
+
+
+class GenerateSemantic(StatesGroup):
+    forward_1 = State()
+    forward_2 = State()
+    forward_3 = State()
+    forward_4 = State()
+    forward_5 = State()
+    forward_6 = State()
+    alcove = State()
+    confirmed_main_goal = State()
+    confirmed_semantic = State()
+    confirmed_format = State()
+    regenerate_brief = State()
+    regenerate_semantic_lines = State()
+    regenerate_layout = State()
+
+
+class AdminStatistic(StatesGroup):
+    excpires_3_days = State()
+    without_subscrioption = State()
+    with_subscrioption = State()
+    new_for_week = State()

@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta, date
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, func
 from sqlalchemy.ext.asyncio.session import AsyncSession
+
 
 from src.database.models import User
 
@@ -10,8 +11,8 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, user_id: int, thread_id: str) -> User:
-        user = User(id=user_id, thread_id=thread_id)
+    async def create(self, user_id: int) -> User:
+        user = User(id=user_id)
         self.session.add(user)
         await self.session.flush()
         return user
@@ -39,7 +40,34 @@ class UserRepository:
         users = result.scalars().all()
         return list(users)
 
-    async def update_user_to_admin(self, user_id: int) -> None:
+    async def update_user(self, user_id: int, **kwargs) -> None:
         await self.session.execute(
-            update(User).where(User.id == user_id).values(is_admin=True)
+            update(User).where(User.id == user_id).values(**kwargs)
         )
+        await self.session.flush()
+
+    async def get_users_today(self) -> list[User] | None:
+        result = await self.session.execute(
+            select(func.count(User.id)).where(
+                func.DATE(User.created_at) == date.today()
+            )
+        )
+        users = result.scalars().all()
+        return list(users)
+
+    async def get_total_by_days(self, days: int | None = None) -> list[User]:
+        if days is None:
+            total = await self.session.scalars(select(User))
+        else:
+            now = datetime.now()
+            start_of_week = now - timedelta(days=now.weekday())
+            end_of_week = start_of_week + timedelta(days=days)
+
+            total = await self.session.scalars(
+                select(User).where(
+                    User.created_at >= start_of_week,
+                    User.created_at < end_of_week,
+                )
+            )
+
+        return list(total.all())

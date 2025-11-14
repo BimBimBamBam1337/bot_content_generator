@@ -2,12 +2,18 @@ services:
   # сам бот
   app:
     build: .
+    restart: always
     environment:
       - TOKEN=${TOKEN}
       - DATABASE_DSN=postgresql+asyncpg://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
       - REDIS_URL=redis://redis:${REDIS_PORT}
+      - SITE_URL=${SITE_URL}
+      - SITE_HOST=${SITE_HOST}
+      - SITE_PORT=${SITE_PORT}
     depends_on:
       - postgres
+    ports:
+      - "8000:8000"
     volumes:
       - .:/app
     networks:
@@ -32,7 +38,6 @@ services:
       - network
     volumes:
       - redis:/data
-
   # сервис для запуска тестов
   tests:
     build: .
@@ -47,7 +52,7 @@ services:
     volumes:
       - .:/app
     networks:
-      - network 
+      - network
 
 networks:
   network:
@@ -58,4 +63,3 @@ volumes:
     driver: local
   redis:
     driver: local
-
