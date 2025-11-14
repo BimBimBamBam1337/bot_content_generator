@@ -107,7 +107,7 @@ async def cancel(message: Message, state: FSMContext):
 async def admin(message: Message, uow: UnitOfWork):
     """Команда для оплаты"""
     async with uow:
-        all_users = await uow.user_repo.get_all()
+        all_users = await uow.user_repo.get_users_today()
         users_subscribed = await uow.subscription_repo.get_total_today()
         summ_subscribed = await uow.subscription_repo.get_total_cost_this_month()
     await message.answer(
