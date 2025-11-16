@@ -33,6 +33,9 @@ class AssistantOpenAI:
         )
         return thread_messages.data
 
+    async def delete_thread(self, thread_id: str):
+        await self.client.beta.threads.delete(thread_id)
+
     async def run_assistant(self, thread: Thread) -> str:
         assistant = await self.client.beta.assistants.retrieve(
             assistant_id=self.assistant_id
@@ -40,14 +43,41 @@ class AssistantOpenAI:
         run = await self.client.beta.threads.runs.create(
             thread_id=thread.id, assistant_id=assistant.id
         )
-        while run.status != "completed":
+
+        while run.status not in ("completed", "failed", "cancelled"):
             await asyncio.sleep(0.5)
             run = await self.client.beta.threads.runs.retrieve(
                 thread_id=thread.id, run_id=run.id
             )
+
+        if run.status != "completed":
+            return "Не удалось завершить генерацию."
+
+        await asyncio.sleep(1)
+
         message = await self.client.beta.threads.messages.list(thread_id=thread.id)
-        new_message = message.data[0].content[0].text.value
-        return new_message
+
+        if not message.data:
+            return "Не удалось получить ответ."
+
+        for msg in message.data:
+            if msg.role == "assistant":
+                try:
+                    return msg.content[0].text.value
+                except (IndexError, AttributeError):
+                    continue
+
+        return "Пустой ответ от ассистента."
 
 
-class WhisperOpenAi: ...
+class WhisperOpenAi:
+    def __init__(self, openai_key: str) -> None:
+        self.client = AsyncOpenAI(api_key=openai_key)
+        self.model = "whisper-1"
+
+    async def get_transcription(self, file_path: str) -> str:
+        with open(file_path, "rb") as voice:
+            transcription = await self.client.audio.transcriptions.create(
+                model=self.model, file=voice
+            )
+        return transcription.text

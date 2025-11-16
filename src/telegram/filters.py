@@ -1,30 +1,59 @@
+from re import L
 from aiogram import Bot
 from aiogram.filters import BaseFilter
-from aiogram.types import Message
+from aiogram.types import Message, TelegramObject
+from aiogram.fsm.context import FSMContext
 from datetime import datetime, timedelta, timezone
 
 from src.database.uow import UnitOfWork
 
 
-class PromoCodeExpiredFilter(BaseFilter):
-    async def __call__(self, message: Message, uow: UnitOfWork, bot: Bot) -> bool:
+class AdminFilter(BaseFilter):
+    async def __call__(self, event: TelegramObject, uow: UnitOfWork) -> bool:
         async with uow:
-            user = await uow.user_repo.get(message.from_user.id)
+            user = await uow.user_repo.get(event.from_user.id)
+            if user.is_admin or user.is_owner:
+                return True
+            return False
 
-            if not user.used_promo_codes:  # type: ignore
+
+class OwnerFilter(BaseFilter):
+    async def __call__(self, event: TelegramObject, uow: UnitOfWork) -> bool:
+        async with uow:
+            user = await uow.user_repo.get(event.from_user.id)
+            if user.is_owner:
+                return True
+            return False
+
+
+class SubscriptionExpiredFilter(BaseFilter):
+    async def __call__(
+        self, message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext
+    ) -> bool:
+        async with uow:
+            # Получаем подписку пользователя
+            subscription = await uow.subscription_repo.get_active_by_user_id(
+                message.from_user.id
+            )
+
+            if not subscription:
+                await message.answer("У тебя нет активной подписки")
+                await state.clear()
                 return False
-
-            promo_code, used_date_str = next(iter(user.used_promo_codes.items()))  # type: ignore
-            code = await uow.promo_code_repo.get(promo_code)
-            used_date = datetime.fromisoformat(used_date_str)
-
-            if used_date.tzinfo is None:
-                used_date = used_date.replace(tzinfo=timezone.utc)
 
             now = datetime.now(timezone.utc)
 
-            if now - used_date > timedelta(days=code.access_days):
+            # Приводим expires_at к UTC для корректного сравнения
+            if subscription.expires_at.tzinfo is None:
+                # Если expires_at наивный (без временной зоны), считаем что он в UTC
+                expires_at_utc = subscription.expires_at.replace(tzinfo=timezone.utc)
+            else:
+                # Если уже имеет временную зону, конвертируем в UTC
+                expires_at_utc = subscription.expires_at.astimezone(timezone.utc)
 
-                return True
-        await message.answer("Промокод истёк, попробуй найти новый")
-        return False
+            if now > expires_at_utc:
+                await message.answer("Твоя подписка истекла, попробуй найти новую")
+                await state.clear()
+                return False
+
+        return True

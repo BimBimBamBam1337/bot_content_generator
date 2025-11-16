@@ -1,6 +1,7 @@
 from datetime import datetime
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column
-from sqlalchemy import String, Integer, Boolean, DateTime, JSON
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
+from sqlalchemy.sql import expression
+from sqlalchemy import Float, ForeignKey, String, Integer, Boolean, DateTime, JSON, func
 from sqlalchemy.ext.mutable import MutableDict
 
 Base = declarative_base()
@@ -11,6 +12,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     thread_id: Mapped[str] = mapped_column(String(255), nullable=True)
+    assistant_id: Mapped[str] = mapped_column(String(255), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
@@ -23,7 +25,13 @@ class User(Base):
 
     language_code: Mapped[str] = mapped_column(String, nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_owner: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=expression.false()
+    )
     username: Mapped[str] = mapped_column(String(255), nullable=True)
+    subscriptions = relationship(
+        "Subscription", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class PromoCode(Base):
@@ -35,3 +43,22 @@ class PromoCode(Base):
     access_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+    cost: Mapped[int] = mapped_column(Integer, nullable=True)
+    promo_code_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("promo_codes.id"), nullable=True
+    )
+
+    activated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    user = relationship("User", back_populates="subscriptions")

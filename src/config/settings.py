@@ -10,8 +10,21 @@ class Settings(BaseSettings):
     db_name: str
     redis_port: str
     openai_key: str
-    assistant_id: str
+    post_generator: str
+    site_url: str
+    site_host: str
+    site_port: int
+    merchant_login: str
+    password1: str
+    password2: str
+    semantic_layout_generator: str
+    threads_generator: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @property
+    def get_webhook_url(self) -> str:
+        """Динамически формирует путь для вебхука."""
+        return f"{self.site_url}:{self.site_port}/webhook"
 
 
 settings = Settings()

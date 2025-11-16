@@ -8,8 +8,8 @@ class PromoCodeRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, promo_code: str) -> PromoCode:
-        promo_code = PromoCode(code=promo_code)
+    async def create(self, promo_code: str, access_days: int) -> PromoCode:
+        promo_code = PromoCode(code=promo_code, access_days=access_days)
         self.session.add(promo_code)
         await self.session.flush()
         return promo_code

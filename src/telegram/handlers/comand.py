@@ -1,14 +1,17 @@
 from loguru import logger
 from aiogram import Router, Bot
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.media_group import MediaGroupBuilder
 
-from src.client_openai import client
+from src.telegram.filters import SubscriptionExpiredFilter, AdminFilter
 from src.database.uow import UnitOfWork
 from src.telegram import texts
 from src.telegram.keyboards.inline.keyboards import create_vertical_keyboard
 from src.telegram.keyboards.inline import keyboards_text
+from src.constants import PHOTOS_DIR
+from src.telegram.states import Promo
 
 router = Router()
 
@@ -19,33 +22,47 @@ async def start(message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext):
     async with uow:
         user_exist = await uow.user_repo.get(message.from_user.id)  # type:ignore
         if user_exist is None:
-            user_thread = await client.create_thread()
-            user = await uow.user_repo.create(message.from_user.id, user_thread.id)  # type: ignore
-            logger.info(f"Registrate user {user.id}")
+            user = await uow.user_repo.create(message.from_user.id)  # type: ignore
+            logger.info("Registrate user {}", user.id)
+    album_builder = MediaGroupBuilder(caption=texts.start_text)
 
+    photo_files = sorted(PHOTOS_DIR.glob("start_photo_*.jpg"))
+    for photo_file in photo_files:
+        album_builder.add(type="photo", media=FSInputFile(photo_file))
+
+    await message.answer_media_group(
+        media=album_builder.build(),
+    )
     await message.answer(
-        text=texts.start_text,
+        "Выберите действие:",
         reply_markup=create_vertical_keyboard(keyboards_text.subscription_menu_buttons),
     )
 
 
 @router.message(Command("pay"))
-async def pay(message: Message):
+async def pay(message: Message, uow: UnitOfWork):
     """Команда для оплаты"""
-
-    await message.answer(
-        text=texts.pay_text,
-        reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
-    )
+    async with uow:
+        subscription = await uow.subscription_repo.get_active_by_user_id(
+            message.from_user.id
+        )
+        if subscription.is_active:
+            await message.answer(text="У вас уже активирована подписка")
+        else:
+            await message.answer(
+                text=texts.pay_text,
+                reply_markup=create_vertical_keyboard(keyboards_text.how_much_buttons),
+            )
 
 
 @router.message(Command("promo"))
-async def promo(message: Message):
+async def promo(message: Message, uow: UnitOfWork, state: FSMContext):
     """Команда для активации промо"""
 
     await message.answer(
         text=texts.promo_text,
     )
+    await state.set_state(Promo.got_code)
 
 
 @router.message(Command("language"))
@@ -58,10 +75,42 @@ async def language(message: Message):
     )
 
 
+@router.message(Command("generate"), SubscriptionExpiredFilter())
+async def generate(message: Message):
+    """Команда для генерирования текста"""
+
+    await message.answer(
+        text=texts.generate_command_text,
+        reply_markup=create_vertical_keyboard(keyboards_text.assemble_posts_buttons),
+    )
+
+
 @router.message(Command("help"))
 async def help(message: Message):
     """Команда для получения инфы о боте"""
 
     await message.answer(
         text=texts.help_text,
+    )
+
+
+@router.message(Command("cancel"))
+async def cancel(message: Message, state: FSMContext):
+    """Команда для отмены дейстивия"""
+    await state.clear()
+    await message.answer(
+        text="Отменил действие",
+    )
+
+
+@router.message(Command("admin"), AdminFilter())
+async def admin(message: Message, uow: UnitOfWork):
+    """Команда для оплаты"""
+    async with uow:
+        all_users = await uow.user_repo.get_users_today()
+        users_subscribed = await uow.subscription_repo.get_total_today()
+        summ_subscribed = await uow.subscription_repo.get_total_cost_this_month()
+    await message.answer(
+        text=texts.statistic_text(len(all_users), users_subscribed, summ_subscribed),
+        reply_markup=create_vertical_keyboard(keyboards_text.admin_buttons),
     )
