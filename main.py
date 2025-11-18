@@ -7,7 +7,7 @@ from loguru import logger
 from src.config import dp, bot, settings
 from src.telegram.midlewares import DependanciesMiddleware
 from src.telegram.handlers import routers
-from src.telegram.webhook import robokassa_result
+from src.telegram.webhook import robokassa_result, robokassa_fail
 
 
 async def setup_bot_commands():
@@ -51,3 +51,4 @@ app = FastAPI(lifespan=lifespan)
 
 
 app.add_api_route("/robokassa/result", robokassa_result, methods=["POST"])
+app.add_api_route("/robokassa/fail", robokassa_fail, methods=["POST"])

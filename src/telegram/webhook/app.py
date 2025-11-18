@@ -121,7 +121,7 @@ async def robokassa_result(request: Request):
 
 
 @app.get("/robokassa/fail", response_class=PlainTextResponse)
-async def robokassa_result(request: Request):
+async def robokassa_fail(request: Request):
     """
     Обрабатывает FailURL Robokassa, когда приходит строка запроса.
     """
