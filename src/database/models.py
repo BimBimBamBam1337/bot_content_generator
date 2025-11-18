@@ -59,9 +59,7 @@ class Subscription(Base):
     __tablename__ = "subscriptions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
-    )
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey("users.id"), nullable=False)
     cost: Mapped[int] = mapped_column(Integer, nullable=True)
     promo_code_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("promo_codes.id"), nullable=True
