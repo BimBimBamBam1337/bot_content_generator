@@ -118,3 +118,22 @@ async def robokassa_result(request: Request):
 
     logger.info(f"Ответ: {result}")
     return PlainTextResponse(result)
+
+
+@app.get("/robokassa/fail", response_class=PlainTextResponse)
+async def robokassa_result(request: Request):
+    """
+    Обрабатывает FailURL Robokassa, когда приходит строка запроса.
+    """
+    logger.error("Получена ошибка от Робокассы")
+
+    body_bytes = await request.body()
+    body_str = body_bytes.decode("utf-8")
+    data = dict(parse_qsl(body_str))
+
+    Shp_user_id = data.get("shp_user_id")
+
+    await bot.send_message(
+        chat_id=Shp_user_id,
+        text="Оплата прошла не успешно. Напишите с вашей проблемой в поддержку",
+    )
