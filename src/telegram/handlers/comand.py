@@ -46,7 +46,7 @@ async def pay(message: Message, uow: UnitOfWork):
         subscription = await uow.subscription_repo.get_active_by_user_id(
             message.from_user.id
         )
-        if subscription.is_active:
+        if subscription and subscription.is_active:
             await message.answer(text="У вас уже активирована подписка")
         else:
             await message.answer(
