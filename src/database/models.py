@@ -1,7 +1,17 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 from sqlalchemy.sql import expression
-from sqlalchemy import Float, ForeignKey, String, Integer, Boolean, DateTime, JSON, func
+from sqlalchemy import (
+    BIGINT,
+    Float,
+    ForeignKey,
+    String,
+    Integer,
+    Boolean,
+    DateTime,
+    JSON,
+    func,
+)
 from sqlalchemy.ext.mutable import MutableDict
 
 Base = declarative_base()
@@ -10,7 +20,7 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     thread_id: Mapped[str] = mapped_column(String(255), nullable=True)
     assistant_id: Mapped[str] = mapped_column(String(255), nullable=True)
 
