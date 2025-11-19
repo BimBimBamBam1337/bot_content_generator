@@ -22,7 +22,7 @@ from src.telegram import prompts
 router = Router()
 
 
-@router.callback_query(F.data.in_(["one_month:499", "one_year:4999"]))
+@router.callback_query(F.data.in_(["one_month:20", "one_year:4999"]))
 async def process_payment(call: CallbackQuery, state: FSMContext, uow: UnitOfWork):
     price = int(call.data.split(":")[1])
     response = create_payment(call.from_user.id, price)
