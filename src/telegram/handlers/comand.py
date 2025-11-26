@@ -22,8 +22,11 @@ async def start(message: Message, uow: UnitOfWork, bot: Bot, state: FSMContext):
     async with uow:
         user_exist = await uow.user_repo.get(message.from_user.id)  # type:ignore
         if user_exist is None:
-            user = await uow.user_repo.create(message.from_user.id)  # type: ignore
-            logger.info("Registrate user {}", user.id)
+            user = await uow.user_repo.create(message.from_user.id, message.from_user.username)  # type: ignore
+            logger.info(
+                "Registrate user {}",
+                user.id,
+            )
     album_builder = MediaGroupBuilder(caption=texts.start_text)
 
     photo_files = sorted(PHOTOS_DIR.glob("start_photo_*.jpg"))
